@@ -1,15 +1,28 @@
 import React, { useEffect, useState } from "react";
 import { BiX, BiShow, BiHide, BiChevronLeft } from "react-icons/bi";
 import { FcGoogle } from "react-icons/fc";
+import { useNavigate } from "react-router-dom";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+  InputOTPSeparator,
+} from "../../ui/input-otp";
 
 const OnboardingSlider = ({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState(0);
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     name: "",
     otp: Array(6).fill(""),
   });
+
+  const handleVerify = () => {
+    navigate("/dashboard");
+  };
 
   useEffect(() => {
     if (!isOpen) {
@@ -118,7 +131,6 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
           </div>
         );
 
-      // Updated Case 1 (Signup) and Case 2 (OTP Verification)
       case 1: // Signup
         return (
           <div className="w-full max-w-md space-y-6">
@@ -194,7 +206,6 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
           </div>
         );
 
-      case 2: // OTP Verification
         return (
           <div className="w-full max-w-md space-y-6">
             <div className="text-center space-y-2">
@@ -204,20 +215,34 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
               </p>
             </div>
 
-            <div className="flex justify-center gap-3">
-              {formData.otp.map((digit, index) => (
-                <input
-                  key={index}
-                  type="text"
-                  maxLength="1"
-                  value={digit}
-                  onChange={(e) => handleInputChange(e, index)}
-                  className="w-14 h-14 text-center text-xl border border-gray-300 rounded-3xl focus:ring-2 focus:ring-blue-500 outline-none"
-                />
-              ))}
+            <div className="flex justify-center">
+              <InputOTP
+                maxLength={6}
+                value={formData.otp.join("")}
+                onChange={(value) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    otp: value.split(""),
+                  }))
+                }
+                containerClassName="justify-center"
+              >
+                <InputOTPGroup className="gap-3">
+                  {formData.otp.map((_, index) => (
+                    <InputOTPSlot
+                      key={index}
+                      index={index}
+                      className="w-14 h-14 text-xl border border-gray-300 rounded-3xl [--ring:rgb(59,130,246)]"
+                    />
+                  ))}
+                </InputOTPGroup>
+              </InputOTP>
             </div>
 
-            <button className="w-full flex items-center justify-center h-[70px] bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium">
+            <button
+              onClick={handleVerify}
+              className="w-full flex items-center justify-center h-[70px] bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium"
+            >
               Verify
             </button>
 
@@ -229,8 +254,156 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
             </p>
           </div>
         );
-      default:
-        return null;
+
+        return (
+          <div className="w-full max-w-md space-y-6">
+            <div className="text-center space-y-2">
+              <p className="text-sm text-gray-600">
+                We sent a code to{" "}
+                {formData.email || "oluwolefsamson44@gmail.com"}
+              </p>
+            </div>
+
+            <div className="flex justify-center">
+              <InputOTP
+                maxLength={6}
+                value={formData.otp.join("")}
+                onChange={(value) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    otp: value.split(""),
+                  }))
+                }
+              >
+                {/* Group 1 - First two digits */}
+                <InputOTPGroup>
+                  <InputOTPSlot
+                    index={0}
+                    className="w-14 h-14 text-xl border border-gray-300 rounded-3xl [--ring:rgb(59,130,246)]"
+                  />
+                  <InputOTPSlot
+                    index={1}
+                    className="w-14 h-14 text-xl border border-gray-300 rounded-3xl [--ring:rgb(59,130,246)]"
+                  />
+                  <InputOTPSlot
+                    index={2}
+                    className="w-14 h-14 text-xl border border-gray-300 rounded-3xl [--ring:rgb(59,130,246)]"
+                  />
+                </InputOTPGroup>
+
+                <InputOTPSeparator className="mx-2 text-2xl">
+                  -
+                </InputOTPSeparator>
+
+                <InputOTPGroup className="gap-3">
+                  <InputOTPSlot
+                    index={4}
+                    className="w-14 h-14 text-xl border border-gray-300 rounded-3xl [--ring:rgb(59,130,246)]"
+                  />
+                  <InputOTPSlot
+                    index={5}
+                    className="w-14 h-14 text-xl border border-gray-300 rounded-3xl [--ring:rgb(59,130,246)]"
+                  />
+                  <InputOTPSlot
+                    index={6}
+                    className="w-14 h-14 text-xl border border-gray-300 rounded-3xl [--ring:rgb(59,130,246)]"
+                  />
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+
+            {/* Keep the rest of your verify button and resend code */}
+            <button
+              onClick={handleVerify}
+              className="w-full flex items-center justify-center h-[70px] bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium"
+            >
+              Verify
+            </button>
+
+            <p className="text-center text-sm text-gray-600">
+              Didn't receive code?{" "}
+              <button className="text-blue-600 font-medium hover:underline">
+                Resend
+              </button>
+            </p>
+          </div>
+        );
+
+      case 2:
+        return (
+          <div className="w-full max-w-md space-y-6">
+            <div className="text-center space-y-2">
+              <p className="text-sm text-gray-600">
+                We sent a code to{" "}
+                {formData.email || "oluwolefsamson44@gmail.com"}
+              </p>
+            </div>
+
+            <div className="flex justify-center">
+              <InputOTP
+                maxLength={6}
+                value={formData.otp.join("")}
+                onChange={(value) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    otp: value.split(""),
+                  }))
+                }
+              >
+                {/* First Group (3 digits) */}
+                <InputOTPGroup className="gap-3">
+                  <InputOTPSlot
+                    index={0}
+                    className="w-14 h-14 text-xl border border-gray-300 rounded-3xl [--ring:rgb(59,130,246)]"
+                  />
+                  <InputOTPSlot
+                    index={1}
+                    className="w-14 h-14 text-xl border border-gray-300 rounded-3xl [--ring:rgb(59,130,246)]"
+                  />
+                  <InputOTPSlot
+                    index={2}
+                    className="w-14 h-14 text-xl border border-gray-300 rounded-3xl [--ring:rgb(59,130,246)]"
+                  />
+                </InputOTPGroup>
+
+                {/* Separator */}
+                <InputOTPSeparator className="mx-2 text-2xl">
+                  --
+                </InputOTPSeparator>
+
+                {/* Second Group (3 digits) */}
+                <InputOTPGroup className="gap-3">
+                  <InputOTPSlot
+                    index={3}
+                    className="w-14 h-14 text-xl border border-gray-300 rounded-3xl [--ring:rgb(59,130,246)]"
+                  />
+                  <InputOTPSlot
+                    index={4}
+                    className="w-14 h-14 text-xl border border-gray-300 rounded-3xl [--ring:rgb(59,130,246)]"
+                  />
+                  <InputOTPSlot
+                    index={5}
+                    className="w-14 h-14 text-xl border border-gray-300 rounded-3xl [--ring:rgb(59,130,246)]"
+                  />
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+
+            <button
+              onClick={handleVerify}
+              className="w-full flex items-center justify-center h-[70px] bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium"
+            >
+              Verify
+            </button>
+
+            <p className="text-center text-sm text-gray-600">
+              Didn't receive code?{" "}
+              <button className="text-blue-600 font-medium hover:underline">
+                Resend
+              </button>
+            </p>
+          </div>
+        );
     }
   };
 
