@@ -1,23 +1,18 @@
 import * as React from "react";
 import {
-  ArrowUpCircleIcon,
-  BarChartIcon,
-  CameraIcon,
-  ClipboardListIcon,
-  DatabaseIcon,
-  FileCodeIcon,
-  FileIcon,
-  FileTextIcon,
-  FolderIcon,
-  HelpCircleIcon,
   LayoutDashboardIcon,
-  ListIcon,
-  SearchIcon,
-  SettingsIcon,
-  UsersIcon,
+  MapPinIcon,
+  LeafIcon,
+  SendIcon,
+  BellIcon,
+  BarChartIcon,
+  NewspaperIcon,
+  UserIcon,
+  LanguagesIcon,
+  LogOutIcon,
+  ArrowUpCircleIcon,
 } from "lucide-react";
 
-import { NavDocuments } from "../../components/ui/nav-documents";
 import { NavMain } from "../../components/ui/nav-main";
 import { NavSecondary } from "../../components/ui/nav-secondary";
 import { NavUser } from "../../components/ui/nav-user";
@@ -30,148 +25,92 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "../../components/ui/sidebar";
+import CropWiseLogo from "../LandingPage/Logo/logo";
 
 const data = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    name: "Samson",
+    email: "farmer@example.com",
+    avatar: "/avatars/farmer.jpg",
   },
   navMain: [
     {
-      title: "Dashboard",
-      url: "#",
+      title: "Overview",
+      url: "/dashboard",
       icon: LayoutDashboardIcon,
     },
     {
-      title: "Lifecycle",
-      url: "#",
-      icon: ListIcon,
+      title: "Nearby Markets",
+      url: "/dashboard/nearby-market",
+      icon: MapPinIcon,
     },
     {
-      title: "Analytics",
-      url: "#",
+      title: "Crops & Prices",
+      url: "/dashboard/crop-price",
+      icon: LeafIcon,
+    },
+    {
+      title: "Submit Price",
+      url: "/dashboard/submit-price",
+      icon: SendIcon,
+    },
+    {
+      title: "Price Alerts",
+      url: "/dashboard/price-alert",
+      icon: BellIcon,
+    },
+    {
+      title: "Price Trends",
+      url: "/dashboard/price-trend",
       icon: BarChartIcon,
     },
     {
-      title: "Projects",
-      url: "#",
-      icon: FolderIcon,
-    },
-    {
-      title: "Team",
-      url: "#",
-      icon: UsersIcon,
-    },
-  ],
-  navClouds: [
-    {
-      title: "Capture",
-      icon: CameraIcon,
-      isActive: true,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Proposal",
-      icon: FileTextIcon,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Prompts",
-      icon: FileCodeIcon,
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
+      title: "Market News",
+      url: "/dashboard/market-news",
+      icon: NewspaperIcon,
     },
   ],
   navSecondary: [
     {
-      title: "Settings",
-      url: "#",
-      icon: SettingsIcon,
+      title: "Profile Settings",
+      url: "/dashboard/profile-setting",
+      icon: UserIcon,
     },
     {
-      title: "Get Help",
-      url: "#",
-      icon: HelpCircleIcon,
+      title: "Language",
+      url: "/dashboard/language",
+      icon: LanguagesIcon,
     },
     {
-      title: "Search",
-      url: "#",
-      icon: SearchIcon,
-    },
-  ],
-  documents: [
-    {
-      name: "Data Library",
-      url: "#",
-      icon: DatabaseIcon,
-    },
-    {
-      name: "Reports",
-      url: "#",
-      icon: ClipboardListIcon,
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: FileIcon,
+      title: "Logout",
+      url: "/logout",
+      icon: LogOutIcon,
     },
   ],
 };
 
 export function AppSidebar(props) {
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
+    <Sidebar
+      collapsible="icon" // Changed from 'offcanvas' to 'icon'
+      {...props}
+      className="flex flex-col h-screen"
+    >
+      {/* Header */}
       <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
-            >
-              <a href="#">
-                <ArrowUpCircleIcon className="h-5 w-5" />
-                <span className="text-base font-semibold">Acme Inc.</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <SidebarMenu></SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
-      </SidebarContent>
-      <SidebarFooter>
+
+      <div className="flex-1 overflow-y-auto">
+        <SidebarContent className="text-gray-800 flex flex-col h-full">
+          <NavMain items={data.navMain} />
+          <div className="mt-4">
+            <NavSecondary items={data.navSecondary} />
+          </div>
+        </SidebarContent>
+      </div>
+
+      <SidebarFooter className="border-t border-sidebar-border">
         <NavUser user={data.user} />
       </SidebarFooter>
     </Sidebar>

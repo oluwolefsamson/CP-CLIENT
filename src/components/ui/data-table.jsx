@@ -799,3 +799,429 @@ function TableCellViewer({ item }) {
     </Sheet>
   );
 }
+
+// import * as React from "react";
+// import {
+//   DndContext,
+//   KeyboardSensor,
+//   MouseSensor,
+//   TouchSensor,
+//   closestCenter,
+//   useSensor,
+//   useSensors,
+// } from "@dnd-kit/core";
+// import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+// import {
+//   SortableContext,
+//   arrayMove,
+//   useSortable,
+//   verticalListSortingStrategy,
+// } from "@dnd-kit/sortable";
+// import { CSS } from "@dnd-kit/utilities";
+// import {
+//   flexRender,
+//   getCoreRowModel,
+//   getFacetedRowModel,
+//   getFacetedUniqueValues,
+//   getFilteredRowModel,
+//   getPaginationRowModel,
+//   getSortedRowModel,
+//   useReactTable,
+// } from "@tanstack/react-table";
+// import {
+//   AlertCircleIcon,
+//   BellIcon,
+//   CheckCircle2Icon,
+//   ChevronDownIcon,
+//   ChevronLeftIcon,
+//   ChevronRightIcon,
+//   ChevronsLeftIcon,
+//   ChevronsRightIcon,
+//   ColumnsIcon,
+//   GripVerticalIcon,
+//   LoaderIcon,
+//   MoreVerticalIcon,
+//   PlusIcon,
+//   ScanEyeIcon,
+//   WheatIcon,
+// } from "lucide-react";
+// import { toast } from "sonner";
+// import { z } from "zod";
+
+// import { useIsMobile } from "../../hooks/use-mobile";
+// import { Badge } from "../../components/ui/badge";
+// import { Button } from "../../components/ui/button";
+// import { Checkbox } from "../../components/ui/checkbox";
+// import {
+//   DropdownMenu,
+//   DropdownMenuCheckboxItem,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuSeparator,
+//   DropdownMenuTrigger,
+// } from "../../components/ui/dropdown-menu";
+// import { Input } from "../../components/ui/input";
+// import { Label } from "../../components/ui/label";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "../../components/ui/select";
+// import {
+//   Table,
+//   TableBody,
+//   TableCell,
+//   TableHead,
+//   TableHeader,
+//   TableRow,
+// } from "../../components/ui/table";
+// import {
+//   Tabs,
+//   TabsContent,
+//   TabsList,
+//   TabsTrigger,
+// } from "../../components/ui/tabs";
+
+// // Agricultural price alert schema
+// export const schema = z.object({
+//   id: z.number(),
+//   crop: z.string(),
+//   type: z.enum(["above", "below"]),
+//   status: z.enum(["active", "inactive"]),
+//   threshold: z.number(),
+//   market: z.string(),
+//   lastTriggered: z.string().optional(),
+// });
+
+// function DragHandle({ id }) {
+//   const { attributes, listeners } = useSortable({ id });
+
+//   return (
+//     <Button
+//       {...attributes}
+//       {...listeners}
+//       variant="ghost"
+//       size="icon"
+//       className="size-7 text-muted-foreground hover:bg-transparent"
+//     >
+//       <GripVerticalIcon className="size-3" />
+//       <span className="sr-only">Reorder alert</span>
+//     </Button>
+//   );
+// }
+
+// const columns = [
+//   {
+//     id: "drag",
+//     header: () => null,
+//     cell: ({ row }) => <DragHandle id={row.original.id} />,
+//   },
+//   {
+//     id: "select",
+//     header: ({ table }) => (
+//       <div className="flex items-center justify-center">
+//         <Checkbox
+//           checked={table.getIsAllPageRowsSelected()}
+//           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+//           aria-label="Select all"
+//         />
+//       </div>
+//     ),
+//     cell: ({ row }) => (
+//       <div className="flex items-center justify-center">
+//         <Checkbox
+//           checked={row.getIsSelected()}
+//           onCheckedChange={(value) => row.toggleSelected(!!value)}
+//           aria-label="Select row"
+//         />
+//       </div>
+//     ),
+//     enableSorting: false,
+//     enableHiding: false,
+//   },
+//   {
+//     accessorKey: "crop",
+//     header: "Crop",
+//     cell: ({ row }) => <TableCellViewer item={row.original} />,
+//     enableHiding: false,
+//   },
+//   {
+//     accessorKey: "type",
+//     header: "Alert Type",
+//     cell: ({ row }) => (
+//       <Badge
+//         variant={row.original.type === "above" ? "destructive" : "default"}
+//         className="capitalize"
+//       >
+//         {row.original.type}
+//       </Badge>
+//     ),
+//   },
+//   {
+//     accessorKey: "status",
+//     header: "Status",
+//     cell: ({ row }) => (
+//       <Badge
+//         variant={row.original.status === "active" ? "default" : "secondary"}
+//         className="gap-1"
+//       >
+//         {row.original.status === "active" ? (
+//           <CheckCircle2Icon className="size-3" />
+//         ) : (
+//           <LoaderIcon className="size-3" />
+//         )}
+//         {row.original.status}
+//       </Badge>
+//     ),
+//   },
+//   {
+//     accessorKey: "threshold",
+//     header: "Price Threshold",
+//     cell: ({ row }) => `₦${row.original.threshold.toLocaleString()}/100kg`,
+//   },
+//   {
+//     accessorKey: "market",
+//     header: "Market",
+//     cell: ({ row }) => row.original.market || "All Markets",
+//   },
+//   {
+//     accessorKey: "lastTriggered",
+//     header: "Last Triggered",
+//     cell: ({ row }) =>
+//       row.original.lastTriggered
+//         ? new Date(row.original.lastTriggered).toLocaleDateString()
+//         : "Never",
+//   },
+//   {
+//     id: "actions",
+//     cell: ({ row }) => (
+//       <DropdownMenu>
+//         <DropdownMenuTrigger asChild>
+//           <Button variant="ghost" size="icon">
+//             <MoreVerticalIcon className="size-4" />
+//             <span className="sr-only">Open menu</span>
+//           </Button>
+//         </DropdownMenuTrigger>
+//         <DropdownMenuContent align="end">
+//           <DropdownMenuItem>Edit Alert</DropdownMenuItem>
+//           <DropdownMenuItem>Duplicate Alert</DropdownMenuItem>
+//           <DropdownMenuItem>View Market Trends</DropdownMenuItem>
+//           <DropdownMenuSeparator />
+//           <DropdownMenuItem className="text-destructive">
+//             Delete Alert
+//           </DropdownMenuItem>
+//         </DropdownMenuContent>
+//       </DropdownMenu>
+//     ),
+//   },
+// ];
+
+// function DraggableRow({ row }) {
+//   const { transform, transition, setNodeRef, isDragging } = useSortable({
+//     id: row.original.id,
+//   });
+
+//   return (
+//     <TableRow
+//       ref={setNodeRef}
+//       style={{
+//         transform: CSS.Transform.toString(transform),
+//         transition,
+//       }}
+//       className={isDragging ? "bg-muted/50" : ""}
+//     >
+//       {row.getVisibleCells().map((cell) => (
+//         <TableCell key={cell.id}>
+//           {flexRender(cell.column.columnDef.cell, cell.getContext())}
+//         </TableCell>
+//       ))}
+//     </TableRow>
+//   );
+// }
+
+// export function PriceAlertsTable({ data: initialData }) {
+//   const [data, setData] = React.useState(initialData);
+//   const [rowSelection, setRowSelection] = React.useState({});
+//   const [columnVisibility, setColumnVisibility] = React.useState({});
+//   const [sorting, setSorting] = React.useState([]);
+//   const [pagination, setPagination] = React.useState({
+//     pageIndex: 0,
+//     pageSize: 10,
+//   });
+
+//   const sensors = useSensors(
+//     useSensor(MouseSensor),
+//     useSensor(TouchSensor),
+//     useSensor(KeyboardSensor)
+//   );
+
+//   const table = useReactTable({
+//     data,
+//     columns,
+//     state: { sorting, columnVisibility, rowSelection, pagination },
+//     getRowId: (row) => row.id.toString(),
+//     onRowSelectionChange: setRowSelection,
+//     onSortingChange: setSorting,
+//     onColumnVisibilityChange: setColumnVisibility,
+//     onPaginationChange: setPagination,
+//     getCoreRowModel: getCoreRowModel(),
+//     getSortedRowModel: getSortedRowModel(),
+//     getPaginationRowModel: getPaginationRowModel(),
+//   });
+
+//   function handleDragEnd(event) {
+//     const { active, over } = event;
+//     if (active.id !== over?.id) {
+//       setData((data) => {
+//         const oldIndex = data.findIndex((d) => d.id === active.id);
+//         const newIndex = data.findIndex((d) => d.id === over?.id);
+//         return arrayMove(data, oldIndex, newIndex);
+//       });
+//     }
+//   }
+
+//   return (
+//     <Tabs defaultValue="alerts">
+//       <div className="flex items-center justify-between p-4">
+//         <TabsList>
+//           <TabsTrigger value="alerts">Price Alerts</TabsTrigger>
+//           <TabsTrigger value="markets">Tracked Markets</TabsTrigger>
+//         </TabsList>
+
+//         <div className="flex gap-2">
+//           <DropdownMenu>
+//             <DropdownMenuTrigger asChild>
+//               <Button variant="outline">
+//                 <ColumnsIcon className="mr-2 size-4" />
+//                 Columns
+//               </Button>
+//             </DropdownMenuTrigger>
+//             <DropdownMenuContent>
+//               {table
+//                 .getAllColumns()
+//                 .filter((column) => column.getCanHide())
+//                 .map((column) => (
+//                   <DropdownMenuCheckboxItem
+//                     key={column.id}
+//                     checked={column.getIsVisible()}
+//                     onCheckedChange={(value) =>
+//                       column.toggleVisibility(!!value)
+//                     }
+//                   >
+//                     {column.id}
+//                   </DropdownMenuCheckboxItem>
+//                 ))}
+//             </DropdownMenuContent>
+//           </DropdownMenu>
+//           <Button>
+//             <PlusIcon className="mr-2 size-4" />
+//             New Alert
+//           </Button>
+//         </div>
+//       </div>
+
+//       <TabsContent value="alerts">
+//         <div className="rounded-lg border">
+//           <DndContext
+//             sensors={sensors}
+//             collisionDetection={closestCenter}
+//             modifiers={[restrictToVerticalAxis]}
+//             onDragEnd={handleDragEnd}
+//           >
+//             <Table>
+//               <TableHeader>
+//                 {table.getHeaderGroups().map((headerGroup) => (
+//                   <TableRow key={headerGroup.id}>
+//                     {headerGroup.headers.map((header) => (
+//                       <TableHead key={header.id}>
+//                         {flexRender(
+//                           header.column.columnDef.header,
+//                           header.getContext()
+//                         )}
+//                       </TableHead>
+//                     ))}
+//                   </TableRow>
+//                 ))}
+//               </TableHeader>
+//               <TableBody>
+//                 <SortableContext
+//                   items={data.map((d) => d.id)}
+//                   strategy={verticalListSortingStrategy}
+//                 >
+//                   {table.getRowModel().rows.map((row) => (
+//                     <DraggableRow key={row.id} row={row} />
+//                   ))}
+//                 </SortableContext>
+//               </TableBody>
+//             </Table>
+//           </DndContext>
+//         </div>
+
+//         <div className="flex items-center justify-between p-4">
+//           <div className="text-sm text-muted-foreground">
+//             {table.getFilteredSelectedRowModel().rows.length} of{" "}
+//             {table.getFilteredRowModel().rows.length} alerts selected
+//           </div>
+//           <div className="flex items-center gap-6">
+//             <div className="flex items-center gap-2">
+//               <Label>Rows per page</Label>
+//               <Select
+//                 value={pagination.pageSize.toString()}
+//                 onValueChange={(value) => table.setPageSize(Number(value))}
+//               >
+//                 <SelectTrigger className="w-20">
+//                   <SelectValue />
+//                 </SelectTrigger>
+//                 <SelectContent>
+//                   {[10, 20, 30].map((size) => (
+//                     <SelectItem key={size} value={size.toString()}>
+//                       {size}
+//                     </SelectItem>
+//                   ))}
+//                 </SelectContent>
+//               </Select>
+//             </div>
+//             <div className="flex items-center gap-2">
+//               <Button
+//                 variant="outline"
+//                 size="icon"
+//                 onClick={() => table.previousPage()}
+//                 disabled={!table.getCanPreviousPage()}
+//               >
+//                 <ChevronLeftIcon className="size-4" />
+//               </Button>
+//               <span>
+//                 Page {table.getState().pagination.pageIndex + 1} of{" "}
+//                 {table.getPageCount()}
+//               </span>
+//               <Button
+//                 variant="outline"
+//                 size="icon"
+//                 onClick={() => table.nextPage()}
+//                 disabled={!table.getCanNextPage()}
+//               >
+//                 <ChevronRightIcon className="size-4" />
+//               </Button>
+//             </div>
+//           </div>
+//         </div>
+//       </TabsContent>
+
+//       <TabsContent value="markets">{/* Tracked Markets Content */}</TabsContent>
+//     </Tabs>
+//   );
+// }
+
+// function TableCellViewer({ item }) {
+//   return (
+//     <div className="flex items-center gap-2">
+//       <WheatIcon className="size-4 text-amber-600" />
+//       <span className="font-medium">{item.crop}</span>
+//       <Badge variant="outline" className="ml-2">
+//         {item.market}
+//       </Badge>
+//     </div>
+//   );
+// }

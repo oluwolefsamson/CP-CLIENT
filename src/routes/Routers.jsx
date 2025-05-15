@@ -6,17 +6,32 @@ import ErrorPage from "../pages/LandingPage/ErrorPage";
 
 import Dashboard from "../pages/Client-Dashboard/Dashboard";
 
+import CropsPrice from "../pages/Client-Dashboard/Crops&Price";
+import Language from "../pages/Client-Dashboard/Language";
+import MarketNews from "../pages/Client-Dashboard/MarketNews";
+import NearbyMarkets from "../pages/Client-Dashboard/NearbyMarkets";
+import PriceAlert from "../pages/Client-Dashboard/PriceAlert";
+import PriceTrend from "../pages/Client-Dashboard/PriceTrend";
+import ProfileSetting from "../pages/Client-Dashboard/ProfileSetting";
+import SubmitPrice from "../pages/Client-Dashboard/SubmitPrice";
+import { Overview } from "../pages/Client-Dashboard/Overview";
+
 const Routers = () => {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/home" element={<Home />} />
 
-      {/* Dashboard route */}
       <Route path="/dashboard" element={<Dashboard />}>
-        {/* <Route index element={<Overview />} />
-        <Route path="overview" element={<Overview />} />
-        <Route path="settings" element={<Settings />} /> */}
+        <Route index element={<Overview />} />
+        <Route path="crop-price" element={<CropsPrice />} />
+        <Route path="language" element={<Language />} />
+        <Route path="market-news" element={<MarketNews />} />
+        <Route path="nearby-market" element={<NearbyMarkets />} />
+        <Route path="price-alert" element={<PriceAlert />} />
+        <Route path="price-trend" element={<PriceTrend />} />
+        <Route path="profile-setting" element={<ProfileSetting />} />
+        <Route path="submit-price" element={<SubmitPrice />} />
       </Route>
 
       <Route path="*" element={<ErrorPage />} />

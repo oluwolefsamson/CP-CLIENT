@@ -1,5 +1,11 @@
-import { TrendingDownIcon, TrendingUpIcon } from "lucide-react";
-
+import {
+  TrendingDownIcon,
+  TrendingUpIcon,
+  SproutIcon,
+  AlertCircleIcon,
+  WarehouseIcon,
+  CoinsIcon,
+} from "lucide-react";
 import { Badge } from "../../components/ui/badge";
 import {
   Card,
@@ -9,93 +15,127 @@ import {
   CardTitle,
 } from "../../components/ui/card";
 
-export function SectionCards() {
+export function SectionCards({ metrics }) {
+  const agriculturalCards = [
+    {
+      title: "Maize Price Trend",
+      value: "₦35,800",
+      change: "+15%",
+      period: "This week",
+      icon: <TrendingUpIcon className="h-5 w-5 text-primary" />,
+      status: "positive",
+      description: "Average price across nearby markets",
+      unit: "per 100kg bag",
+    },
+    {
+      title: "Price Alerts",
+      value: "8 Triggers",
+      change: "3 New",
+      period: "Last 24h",
+      icon: <AlertCircleIcon className="h-5 w-5 text-destructive" />,
+      status: "alert",
+      description: "Active price threshold alerts",
+      unit: "across your crops",
+    },
+    {
+      title: "Price Submissions",
+      value: "24 Entries",
+      change: "+40%",
+      period: "Today",
+      icon: <CoinsIcon className="h-5 w-5 text-primary" />,
+      status: "positive",
+      description: "Community price reports submitted",
+      unit: "in your region",
+    },
+    {
+      title: "Active Markets",
+      value: "12 Nearby",
+      change: "2 New",
+      period: "This month",
+      icon: <WarehouseIcon className="h-5 w-5 text-primary" />,
+      status: "neutral",
+      description: "Markets with recent price updates",
+      unit: "within 50km radius",
+    },
+  ];
+
   return (
-    <div className="*:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-4 grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card lg:px-6">
-      <Card className="@container/card">
-        <CardHeader className="relative">
-          <CardDescription>Total Revenue</CardDescription>
-          <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
-            $1,250.00
-          </CardTitle>
-          <div className="absolute right-4 top-4">
-            <Badge variant="outline" className="flex gap-1 rounded-lg text-xs">
-              <TrendingUpIcon className="size-3" />
-              +12.5%
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Trending up this month <TrendingUpIcon className="size-4" />
-          </div>
-          <div className="text-muted-foreground">
-            Visitors for the last 6 months
-          </div>
-        </CardFooter>
-      </Card>
-      <Card className="@container/card">
-        <CardHeader className="relative">
-          <CardDescription>New Customers</CardDescription>
-          <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
-            1,234
-          </CardTitle>
-          <div className="absolute right-4 top-4">
-            <Badge variant="outline" className="flex gap-1 rounded-lg text-xs">
-              <TrendingDownIcon className="size-3" />
-              -20%
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Down 20% this period <TrendingDownIcon className="size-4" />
-          </div>
-          <div className="text-muted-foreground">
-            Acquisition needs attention
-          </div>
-        </CardFooter>
-      </Card>
-      <Card className="@container/card">
-        <CardHeader className="relative">
-          <CardDescription>Active Accounts</CardDescription>
-          <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
-            45,678
-          </CardTitle>
-          <div className="absolute right-4 top-4">
-            <Badge variant="outline" className="flex gap-1 rounded-lg text-xs">
-              <TrendingUpIcon className="size-3" />
-              +12.5%
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Strong user retention <TrendingUpIcon className="size-4" />
-          </div>
-          <div className="text-muted-foreground">Engagement exceed targets</div>
-        </CardFooter>
-      </Card>
-      <Card className="@container/card">
-        <CardHeader className="relative">
-          <CardDescription>Growth Rate</CardDescription>
-          <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">
-            4.5%
-          </CardTitle>
-          <div className="absolute right-4 top-4">
-            <Badge variant="outline" className="flex gap-1 rounded-lg text-xs">
-              <TrendingUpIcon className="size-3" />
-              +4.5%
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
-            Steady performance <TrendingUpIcon className="size-4" />
-          </div>
-          <div className="text-muted-foreground">Meets growth projections</div>
-        </CardFooter>
-      </Card>
+    <div className="group/cards *:data-[slot=card]:shadow-xs grid auto-rows-fr grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-green-50 *:data-[slot=card]:to-card hover:*:data-[slot=card]:[&:not(:hover)]:opacity-50 dark:*:data-[slot=card]:bg-card sm:grid-cols-2 lg:grid-cols-4 lg:px-6">
+      {agriculturalCards.map((card, index) => (
+        <Card
+          key={index}
+          className="@container/card relative overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-green-50/20 to-transparent opacity-20" />
+
+          <CardHeader className="relative">
+            <div className="flex items-center justify-between">
+              <CardDescription className="text-sm font-medium text-muted-foreground">
+                {card.title}
+              </CardDescription>
+              <div
+                className={`flex h-8 w-8 items-center justify-center rounded-full p-1.5 ${
+                  card.status === "alert"
+                    ? "bg-destructive/10"
+                    : "bg-primary/10"
+                }`}
+              >
+                {card.icon}
+              </div>
+            </div>
+
+            <CardTitle className="@[250px]/card:text-3xl mt-4 text-2xl font-bold tabular-nums">
+              {card.value}
+              <span className="ml-2 text-base font-medium text-muted-foreground">
+                {card.unit}
+              </span>
+            </CardTitle>
+
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-secondary/20">
+              <div
+                className={`h-full transition-all duration-500 ${
+                  card.status === "alert"
+                    ? "bg-destructive w-1/3"
+                    : card.status === "positive"
+                      ? "bg-primary w-2/3"
+                      : "bg-gray-400 w-1/2"
+                }`}
+              />
+            </div>
+          </CardHeader>
+
+          <CardFooter className="flex flex-col items-start gap-2 text-sm">
+            <div className="flex items-center gap-2 font-medium">
+              {card.status === "alert" ? (
+                <>
+                  <AlertCircleIcon className="h-4 w-4 text-destructive" />
+                  <span className="text-destructive">{card.change}</span>
+                </>
+              ) : (
+                <>
+                  {card.status === "positive" ? (
+                    <TrendingUpIcon className="h-4 w-4 text-primary" />
+                  ) : (
+                    <TrendingDownIcon className="h-4 w-4 text-gray-400" />
+                  )}
+                  <span
+                    className={
+                      card.status === "positive"
+                        ? "text-primary"
+                        : "text-gray-400"
+                    }
+                  >
+                    {card.change}
+                  </span>
+                </>
+              )}
+              <span className="text-muted-foreground">{card.period}</span>
+            </div>
+
+            <div className="text-muted-foreground">{card.description}</div>
+          </CardFooter>
+        </Card>
+      ))}
     </div>
   );
 }
