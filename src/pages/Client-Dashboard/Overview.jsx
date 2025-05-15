@@ -46,7 +46,7 @@ export function Overview() {
           </div>
         </div>
       ) : (
-        <DataTable data={data} />
+        <DataTable />
       )}
     </div>
   );

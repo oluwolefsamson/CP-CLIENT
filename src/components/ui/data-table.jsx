@@ -8,7 +8,6 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
   SortableContext,
@@ -20,40 +19,27 @@ import { CSS } from "@dnd-kit/utilities";
 import {
   flexRender,
   getCoreRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import {
+  AlertCircleIcon,
   CheckCircle2Icon,
-  CheckCircleIcon,
-  ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  ChevronsLeftIcon,
-  ChevronsRightIcon,
   ColumnsIcon,
   GripVerticalIcon,
   LoaderIcon,
   MoreVerticalIcon,
   PlusIcon,
-  TrendingUpIcon,
+  WheatIcon,
 } from "lucide-react";
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
-import { toast } from "sonner";
 import { z } from "zod";
 
-import { useIsMobile } from "../../hooks/use-mobile";
+// UI Components
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "../../components/ui/chart";
 import { Checkbox } from "../../components/ui/checkbox";
 import {
   DropdownMenu,
@@ -63,7 +49,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../components/ui/dropdown-menu";
-import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import {
   Select,
@@ -72,17 +57,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select";
-import { Separator } from "../../components/ui/separator";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "../../components/ui/sheet";
 import {
   Table,
   TableBody,
@@ -98,20 +72,48 @@ import {
   TabsTrigger,
 } from "../../components/ui/tabs";
 
+// Updated Agricultural price alert schema with optional fields and extended enums
 export const schema = z.object({
-  id: z.number(),
-  header: z.string(),
-  type: z.string(),
-  status: z.string(),
-  target: z.string(),
-  limit: z.string(),
-  reviewer: z.string(),
+  id: z.number().positive().optional(),
+  crop: z.string().min(1).optional(),
+  type: z.enum(["above", "below", "other"]).optional(),
+  status: z.enum(["active", "inactive", "pending"]).optional(),
+  threshold: z.number().positive().optional(),
+  market: z.string().min(1).optional(),
+  lastTriggered: z.string().optional(),
 });
 
+const sampleData = [
+  {
+    id: 1,
+    crop: "Maize",
+    type: "above",
+    status: "active",
+    threshold: 25000,
+    market: "Lagos Main Market",
+    lastTriggered: "2024-03-15",
+  },
+  {
+    id: 2,
+    crop: "Rice",
+    type: "below",
+    status: "active",
+    threshold: 42000,
+    market: "Kano Central Market",
+    lastTriggered: "2024-03-14",
+  },
+  {
+    id: 3,
+    crop: "Sorghum",
+    type: "above",
+    status: "inactive",
+    threshold: 18000,
+    market: "Kaduna Wholesale",
+  },
+];
+
 function DragHandle({ id }) {
-  const { attributes, listeners } = useSortable({
-    id,
-  });
+  const { attributes, listeners } = useSortable({ id });
 
   return (
     <Button
@@ -119,10 +121,10 @@ function DragHandle({ id }) {
       {...listeners}
       variant="ghost"
       size="icon"
-      className="size-7 text-muted-foreground hover:bg-transparent"
+      className="size-7 text-green-600 hover:bg-green-50"
     >
-      <GripVerticalIcon className="size-3 text-muted-foreground" />
-      <span className="sr-only">Drag to reorder</span>
+      <GripVerticalIcon className="size-3.5" />
+      <span className="sr-only">Reorder alert</span>
     </Button>
   );
 }
@@ -132,18 +134,17 @@ const columns = [
     id: "drag",
     header: () => null,
     cell: ({ row }) => <DragHandle id={row.original.id} />,
+    size: 40,
   },
   {
     id: "select",
     header: ({ table }) => (
       <div className="flex items-center justify-center">
         <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
+          checked={table.getIsAllPageRowsSelected()}
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
+          className="border-green-300 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-700"
         />
       </div>
     ),
@@ -153,173 +154,140 @@ const columns = [
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
           aria-label="Select row"
+          className="border-green-300 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-700"
         />
       </div>
     ),
+    size: 40,
     enableSorting: false,
     enableHiding: false,
   },
   {
-    accessorKey: "header",
-    header: "Header",
+    accessorKey: "crop",
+    header: "Crop",
     cell: ({ row }) => <TableCellViewer item={row.original} />,
+    size: 200,
     enableHiding: false,
   },
   {
     accessorKey: "type",
-    header: "Section Type",
+    header: "Alert Type",
     cell: ({ row }) => (
-      <div className="w-32">
-        <Badge variant="outline" className="px-1.5 text-muted-foreground">
-          {row.original.type}
-        </Badge>
-      </div>
+      <Badge
+        variant={row.original.type === "above" ? "default" : "secondary"}
+        className="capitalize bg-green-100 text-green-800 hover:bg-green-200"
+      >
+        {row.original.type || "N/A"}
+      </Badge>
     ),
+    size: 120,
   },
   {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => (
       <Badge
-        variant="outline"
-        className="flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3"
+        variant={row.original.status === "active" ? "default" : "secondary"}
+        className="gap-1 bg-green-50 text-green-700 border-green-200"
       >
-        {row.original.status === "Done" ? (
-          <CheckCircle2Icon className="text-green-500 dark:text-green-400" />
+        {row.original.status === "active" ? (
+          <CheckCircle2Icon className="size-3.5 text-green-600" />
         ) : (
-          <LoaderIcon />
+          <LoaderIcon className="size-3.5 text-green-600 animate-spin" />
         )}
-        {row.original.status}
+        {row.original.status || "N/A"}
       </Badge>
     ),
+    size: 120,
   },
   {
-    accessorKey: "target",
-    header: () => <div className="w-full text-right">Target</div>,
-    cell: ({ row }) => (
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-            loading: `Saving ${row.original.header}`,
-            success: "Done",
-            error: "Error",
-          });
-        }}
-      >
-        <Label htmlFor={`${row.original.id}-target`} className="sr-only">
-          Target
-        </Label>
-        <Input
-          className="h-8 w-16 border-transparent bg-transparent text-right shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background"
-          defaultValue={row.original.target}
-          id={`${row.original.id}-target`}
-        />
-      </form>
-    ),
-  },
-  {
-    accessorKey: "limit",
-    header: () => <div className="w-full text-right">Limit</div>,
-    cell: ({ row }) => (
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-            loading: `Saving ${row.original.header}`,
-            success: "Done",
-            error: "Error",
-          });
-        }}
-      >
-        <Label htmlFor={`${row.original.id}-limit`} className="sr-only">
-          Limit
-        </Label>
-        <Input
-          className="h-8 w-16 border-transparent bg-transparent text-right shadow-none hover:bg-input/30 focus-visible:border focus-visible:bg-background"
-          defaultValue={row.original.limit}
-          id={`${row.original.id}-limit`}
-        />
-      </form>
-    ),
-  },
-  {
-    accessorKey: "reviewer",
-    header: "Reviewer",
+    accessorKey: "threshold",
+    header: "Price Threshold",
     cell: ({ row }) => {
-      const isAssigned = row.original.reviewer !== "Assign reviewer";
-
-      if (isAssigned) {
-        return row.original.reviewer;
-      }
-
+      const threshold = Number(row.original.threshold) || 0;
       return (
-        <>
-          <Label htmlFor={`${row.original.id}-reviewer`} className="sr-only">
-            Reviewer
-          </Label>
-          <Select>
-            <SelectTrigger
-              className="h-8 w-40"
-              id={`${row.original.id}-reviewer`}
-            >
-              <SelectValue placeholder="Assign reviewer" />
-            </SelectTrigger>
-            <SelectContent align="end">
-              <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-              <SelectItem value="Jamik Tashpulatov">
-                Jamik Tashpulatov
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </>
+        <span className="font-semibold text-green-700">
+          ₦{threshold.toLocaleString()}/100kg
+        </span>
       );
     },
+    size: 180,
+  },
+  {
+    accessorKey: "market",
+    header: "Market",
+    cell: ({ row }) => row.original.market || "All Markets",
+    size: 220,
+  },
+  {
+    accessorKey: "lastTriggered",
+    header: "Last Triggered",
+    cell: ({ row }) =>
+      row.original.lastTriggered ? (
+        <span className="text-green-600">
+          {new Date(row.original.lastTriggered).toLocaleDateString()}
+        </span>
+      ) : (
+        <span className="text-green-400">Never</span>
+      ),
+    size: 150,
   },
   {
     id: "actions",
-    cell: () => (
+    cell: ({ row }) => (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="flex size-8 text-muted-foreground data-[state=open]:bg-muted"
             size="icon"
+            className="text-green-600 hover:bg-green-50"
           >
-            <MoreVerticalIcon />
+            <MoreVerticalIcon className="size-4" />
             <span className="sr-only">Open menu</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-32">
-          <DropdownMenuItem>Edit</DropdownMenuItem>
-          <DropdownMenuItem>Make a copy</DropdownMenuItem>
-          <DropdownMenuItem>Favorite</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>Delete</DropdownMenuItem>
+        <DropdownMenuContent align="end" className="border-green-100">
+          <DropdownMenuItem className="focus:bg-green-50">
+            Edit Alert
+          </DropdownMenuItem>
+          <DropdownMenuItem className="focus:bg-green-50">
+            Duplicate Alert
+          </DropdownMenuItem>
+          <DropdownMenuItem className="focus:bg-green-50">
+            View Market Trends
+          </DropdownMenuItem>
+          <DropdownMenuSeparator className="bg-green-100" />
+          <DropdownMenuItem className="text-red-600 focus:bg-red-50">
+            Delete Alert
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     ),
+    size: 60,
   },
 ];
 
 function DraggableRow({ row }) {
+  if (!row.original?.id) {
+    console.error("Missing row ID:", row);
+    return null;
+  }
+
   const { transform, transition, setNodeRef, isDragging } = useSortable({
     id: row.original.id,
   });
 
   return (
     <TableRow
-      data-state={row.getIsSelected() && "selected"}
-      data-dragging={isDragging}
       ref={setNodeRef}
-      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
       style={{
         transform: CSS.Transform.toString(transform),
-        transition: transition,
+        transition,
       }}
+      className={`${isDragging ? "bg-green-50" : "hover:bg-green-50"} border-b border-green-100`}
     >
       {row.getVisibleCells().map((cell) => (
-        <TableCell key={cell.id}>
+        <TableCell key={cell.id} className="py-3">
           {flexRender(cell.column.columnDef.cell, cell.getContext())}
         </TableCell>
       ))}
@@ -327,901 +295,307 @@ function DraggableRow({ row }) {
   );
 }
 
-export function DataTable({ data: initialData }) {
-  const [data, setData] = React.useState(() => initialData);
+export function DataTable({ data = sampleData }) {
+  const [tableData, setTableData] = React.useState(() => {
+    try {
+      return data.map((item) =>
+        schema.parse({
+          id: item.id || Math.floor(Math.random() * 1000),
+          crop: item.crop || "Unknown Crop",
+          type: item.type || "above",
+          status: item.status || "inactive",
+          threshold: item.threshold || 0,
+          market: item.market || "General Market",
+          lastTriggered: item.lastTriggered,
+        })
+      );
+    } catch (error) {
+      console.error("Data validation error:", error);
+      return [];
+    }
+  });
+
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] = React.useState({});
-  const [columnFilters, setColumnFilters] = React.useState([]);
   const [sorting, setSorting] = React.useState([]);
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
     pageSize: 10,
   });
-  const sortableId = React.useId();
+
   const sensors = useSensors(
-    useSensor(MouseSensor, {}),
-    useSensor(TouchSensor, {}),
-    useSensor(KeyboardSensor, {})
+    useSensor(MouseSensor),
+    useSensor(TouchSensor),
+    useSensor(KeyboardSensor)
   );
 
-  const dataIds = React.useMemo(() => data?.map(({ id }) => id) || [], [data]);
-
   const table = useReactTable({
-    data,
+    data: tableData,
     columns,
-    state: {
-      sorting,
-      columnVisibility,
-      rowSelection,
-      columnFilters,
-      pagination,
-    },
+    state: { sorting, columnVisibility, rowSelection, pagination },
     getRowId: (row) => row.id.toString(),
-    enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
+    getPaginationRowModel: getPaginationRowModel(),
   });
 
   function handleDragEnd(event) {
     const { active, over } = event;
-    if (active && over && active.id !== over.id) {
-      setData((data) => {
-        const oldIndex = dataIds.indexOf(active.id);
-        const newIndex = dataIds.indexOf(over.id);
+    if (!active?.id || !over?.id) return;
+
+    if (active.id !== over.id) {
+      setTableData((data) => {
+        const oldIndex = data.findIndex((d) => d.id === active.id);
+        const newIndex = data.findIndex((d) => d.id === over.id);
+
+        if (oldIndex === -1 || newIndex === -1) return data;
+
         return arrayMove(data, oldIndex, newIndex);
       });
     }
   }
 
   return (
-    <Tabs
-      defaultValue="outline"
-      className="flex w-full flex-col justify-start gap-6"
-    >
-      <div className="flex items-center justify-between px-4 lg:px-6">
-        <Label htmlFor="view-selector" className="sr-only">
-          View
-        </Label>
-        <Select defaultValue="outline">
-          <SelectTrigger
-            className="@4xl/main:hidden flex w-fit"
-            id="view-selector"
-          >
-            <SelectValue placeholder="Select a view" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="outline">Outline</SelectItem>
-            <SelectItem value="past-performance">Past Performance</SelectItem>
-            <SelectItem value="key-personnel">Key Personnel</SelectItem>
-            <SelectItem value="focus-documents">Focus Documents</SelectItem>
-          </SelectContent>
-        </Select>
-        <TabsList className="@4xl/main:flex hidden">
-          <TabsTrigger value="outline">Outline</TabsTrigger>
-          <TabsTrigger value="past-performance" className="gap-1">
-            Past Performance{" "}
-            <Badge
-              variant="secondary"
-              className="flex h-5 w-5 items-center justify-center rounded-full bg-muted-foreground/30"
+    <div className="mx-4 lg:mx-6">
+      {" "}
+      {/* Added horizontal margins */}
+      <Tabs defaultValue="alerts">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-green-50 rounded-t-lg border-b border-green-100">
+          {/* Tabs - Stack on mobile, row on desktop */}
+          <TabsList className="bg-green-100 w-full sm:w-auto">
+            <TabsTrigger
+              value="alerts"
+              className="data-[state=active]:bg-green-600 data-[state=active]:text-white w-full sm:w-auto text-sm sm:text-base px-3 py-1.5"
             >
-              3
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger value="key-personnel" className="gap-1">
-            Key Personnel{" "}
-            <Badge
-              variant="secondary"
-              className="flex h-5 w-5 items-center justify-center rounded-full bg-muted-foreground/30"
+              Price Alerts
+            </TabsTrigger>
+            <TabsTrigger
+              value="markets"
+              className="data-[state=active]:bg-green-600 data-[state=active]:text-white w-full sm:w-auto text-sm sm:text-base px-3 py-1.5"
             >
-              2
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger value="focus-documents">Focus Documents</TabsTrigger>
-        </TabsList>
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <ColumnsIcon />
-                <span className="hidden lg:inline">Customize Columns</span>
-                <span className="lg:hidden">Columns</span>
-                <ChevronDownIcon />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              {table
-                .getAllColumns()
-                .filter(
-                  (column) =>
-                    typeof column.accessorFn !== "undefined" &&
-                    column.getCanHide()
-                )
-                .map((column) => {
-                  return (
+              Tracked Markets
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Buttons - Stack on mobile, row on desktop */}
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="border-green-200 text-green-700 hover:bg-green-100 w-full sm:w-auto justify-between sm:justify-start"
+                >
+                  <ColumnsIcon className="mr-0 sm:mr-2 size-4 text-green-600" />
+                  <span className=" sm:inline">Columns</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="border-green-100 w-[200px]">
+                {table
+                  .getAllColumns()
+                  .filter((column) => column.getCanHide())
+                  .map((column) => (
                     <DropdownMenuCheckboxItem
                       key={column.id}
-                      className="capitalize"
                       checked={column.getIsVisible()}
                       onCheckedChange={(value) =>
                         column.toggleVisibility(!!value)
                       }
+                      className="focus:bg-green-50 text-green-700 text-sm"
                     >
                       {column.id}
                     </DropdownMenuCheckboxItem>
-                  );
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Button variant="outline" size="sm">
-            <PlusIcon />
-            <span className="hidden lg:inline">Add Section</span>
-          </Button>
-        </div>
-      </div>
-      <TabsContent
-        value="outline"
-        className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
-      >
-        <div className="overflow-hidden rounded-lg border">
-          <DndContext
-            collisionDetection={closestCenter}
-            modifiers={[restrictToVerticalAxis]}
-            onDragEnd={handleDragEnd}
-            sensors={sensors}
-            id={sortableId}
-          >
-            <Table>
-              <TableHeader className="sticky top-0 z-10 bg-muted">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
-                      return (
-                        <TableHead key={header.id} colSpan={header.colSpan}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </TableHead>
-                      );
-                    })}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody className="**:data-[slot=table-cell]:first:w-8">
-                {table.getRowModel().rows?.length ? (
-                  <SortableContext
-                    items={dataIds}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    {table.getRowModel().rows.map((row) => (
-                      <DraggableRow key={row.id} row={row} />
-                    ))}
-                  </SortableContext>
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length}
-                      className="h-24 text-center"
-                    >
-                      No results.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </DndContext>
-        </div>
-        <div className="flex items-center justify-between px-4">
-          <div className="hidden flex-1 text-sm text-muted-foreground lg:flex">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
-          </div>
-          <div className="flex w-full items-center gap-8 lg:w-fit">
-            <div className="hidden items-center gap-2 lg:flex">
-              <Label htmlFor="rows-per-page" className="text-sm font-medium">
-                Rows per page
-              </Label>
-              <Select
-                value={`${table.getState().pagination.pageSize}`}
-                onValueChange={(value) => {
-                  table.setPageSize(Number(value));
-                }}
-              >
-                <SelectTrigger className="w-20" id="rows-per-page">
-                  <SelectValue
-                    placeholder={table.getState().pagination.pageSize}
-                  />
-                </SelectTrigger>
-                <SelectContent side="top">
-                  {[10, 20, 30, 40, 50].map((pageSize) => (
-                    <SelectItem key={pageSize} value={`${pageSize}`}>
-                      {pageSize}
-                    </SelectItem>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex w-fit items-center justify-center text-sm font-medium">
-              Page {table.getState().pagination.pageIndex + 1} of{" "}
-              {table.getPageCount()}
-            </div>
-            <div className="ml-auto flex items-center gap-2 lg:ml-0">
-              <Button
-                variant="outline"
-                className="hidden h-8 w-8 p-0 lg:flex"
-                onClick={() => table.setPageIndex(0)}
-                disabled={!table.getCanPreviousPage()}
-              >
-                <span className="sr-only">Go to first page</span>
-                <ChevronsLeftIcon />
-              </Button>
-              <Button
-                variant="outline"
-                className="size-8"
-                size="icon"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-              >
-                <span className="sr-only">Go to previous page</span>
-                <ChevronLeftIcon />
-              </Button>
-              <Button
-                variant="outline"
-                className="size-8"
-                size="icon"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-              >
-                <span className="sr-only">Go to next page</span>
-                <ChevronRightIcon />
-              </Button>
-              <Button
-                variant="outline"
-                className="hidden size-8 lg:flex"
-                size="icon"
-                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                disabled={!table.getCanNextPage()}
-              >
-                <span className="sr-only">Go to last page</span>
-                <ChevronsRightIcon />
-              </Button>
-            </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto justify-between sm:justify-start">
+              <PlusIcon className="mr-0 sm:mr-2 size-4" />
+              <span className=" sm:inline">New Alert</span>
+            </Button>
           </div>
         </div>
-      </TabsContent>
-      <TabsContent
-        value="past-performance"
-        className="flex flex-col px-4 lg:px-6"
-      >
-        <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
-      </TabsContent>
-      <TabsContent value="key-personnel" className="flex flex-col px-4 lg:px-6">
-        <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
-      </TabsContent>
-      <TabsContent
-        value="focus-documents"
-        className="flex flex-col px-4 lg:px-6"
-      >
-        <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
-      </TabsContent>
-    </Tabs>
+
+        <TabsContent value="alerts">
+          <div className="rounded-b-lg border border-green-100 bg-white">
+            <div className="relative overflow-x-auto shadow-sm">
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                modifiers={[restrictToVerticalAxis]}
+                onDragEnd={handleDragEnd}
+              >
+                <div className="min-w-[1000px]">
+                  <Table className="w-full">
+                    {tableData.length === 0 ? (
+                      <TableBody>
+                        <TableRow>
+                          <TableCell
+                            colSpan={columns.length}
+                            className="h-24 text-center text-green-600 py-8"
+                          >
+                            <div className="flex flex-col items-center gap-2">
+                              <AlertCircleIcon className="size-8 text-green-400" />
+                              No price alerts found
+                              <span className="text-sm text-green-500">
+                                Click "New Alert" to create your first price
+                                monitor
+                              </span>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    ) : (
+                      <>
+                        <TableHeader className="bg-green-50 sticky top-0 z-10">
+                          {table.getHeaderGroups().map((headerGroup) => (
+                            <TableRow
+                              key={headerGroup.id}
+                              className="border-b border-green-100"
+                            >
+                              {headerGroup.headers.map((header) => (
+                                <TableHead
+                                  key={header.id}
+                                  style={{ width: header.getSize() }}
+                                  className="text-green-700 font-semibold py-3 bg-green-50"
+                                >
+                                  {flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext()
+                                  )}
+                                </TableHead>
+                              ))}
+                            </TableRow>
+                          ))}
+                        </TableHeader>
+                        <TableBody>
+                          <SortableContext
+                            items={tableData.map((d) => d.id)}
+                            strategy={verticalListSortingStrategy}
+                          >
+                            {table.getRowModel().rows.map((row) => (
+                              <DraggableRow key={row.id} row={row} />
+                            ))}
+                          </SortableContext>
+                        </TableBody>
+                      </>
+                    )}
+                  </Table>
+                </div>
+              </DndContext>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between p-4 bg-green-50 border-t border-green-100">
+            <div className="text-sm text-green-600">
+              {table.getFilteredSelectedRowModel().rows.length} of{" "}
+              {table.getFilteredRowModel().rows.length} alerts selected
+            </div>
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2">
+                <Label className="text-green-700">Rows per page</Label>
+                <Select
+                  value={pagination.pageSize.toString()}
+                  onValueChange={(value) => table.setPageSize(Number(value))}
+                >
+                  <SelectTrigger className="w-20 border-green-200 text-green-700">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="border-green-100">
+                    {[10, 20, 30].map((size) => (
+                      <SelectItem
+                        key={size}
+                        value={size.toString()}
+                        className="focus:bg-green-50 text-green-700"
+                      >
+                        {size}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                  className="border-green-200 text-green-700 hover:bg-green-100"
+                >
+                  <ChevronLeftIcon className="size-4" />
+                </Button>
+                <span className="text-green-600">
+                  Page {table.getState().pagination.pageIndex + 1} of{" "}
+                  {table.getPageCount()}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                  className="border-green-200 text-green-700 hover:bg-green-100"
+                >
+                  <ChevronRightIcon className="size-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="markets">
+          {/* Tracked Markets Content */}
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }
-
-const chartData = [
-  { month: "January", desktop: 186, mobile: 80 },
-  { month: "February", desktop: 305, mobile: 200 },
-  { month: "March", desktop: 237, mobile: 120 },
-  { month: "April", desktop: 73, mobile: 190 },
-  { month: "May", desktop: 209, mobile: 130 },
-  { month: "June", desktop: 214, mobile: 140 },
-];
-
-const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "var(--primary)",
-  },
-  mobile: {
-    label: "Mobile",
-    color: "var(--primary)",
-  },
-};
 
 function TableCellViewer({ item }) {
-  const isMobile = useIsMobile();
-
   return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="link" className="w-fit px-0 text-left text-foreground">
-          {item.header}
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="right" className="flex flex-col">
-        <SheetHeader className="gap-1">
-          <SheetTitle>{item.header}</SheetTitle>
-          <SheetDescription>
-            Showing total visitors for the last 6 months
-          </SheetDescription>
-        </SheetHeader>
-        <div className="flex flex-1 flex-col gap-4 overflow-y-auto py-4 text-sm">
-          {!isMobile && (
-            <>
-              <ChartContainer config={chartConfig}>
-                <AreaChart
-                  accessibilityLayer
-                  data={chartData}
-                  margin={{
-                    left: 0,
-                    right: 10,
-                  }}
-                >
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    tickFormatter={(value) => value.slice(0, 3)}
-                    hide
-                  />
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent indicator="dot" />}
-                  />
-                  <Area
-                    dataKey="mobile"
-                    type="natural"
-                    fill="var(--color-mobile)"
-                    fillOpacity={0.6}
-                    stroke="var(--color-mobile)"
-                    stackId="a"
-                  />
-                  <Area
-                    dataKey="desktop"
-                    type="natural"
-                    fill="var(--color-desktop)"
-                    fillOpacity={0.4}
-                    stroke="var(--color-desktop)"
-                    stackId="a"
-                  />
-                </AreaChart>
-              </ChartContainer>
-              <Separator />
-              <div className="grid gap-2">
-                <div className="flex gap-2 font-medium leading-none">
-                  Trending up by 5.2% this month{" "}
-                  <TrendingUpIcon className="size-4" />
-                </div>
-                <div className="text-muted-foreground">
-                  Showing total visitors for the last 6 months. This is just
-                  some random text to test the layout. It spans multiple lines
-                  and should wrap around.
-                </div>
-              </div>
-              <Separator />
-            </>
-          )}
-          <form className="flex flex-col gap-4">
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="header">Header</Label>
-              <Input id="header" defaultValue={item.header} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="type">Type</Label>
-                <Select defaultValue={item.type}>
-                  <SelectTrigger id="type" className="w-full">
-                    <SelectValue placeholder="Select a type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Table of Contents">
-                      Table of Contents
-                    </SelectItem>
-                    <SelectItem value="Executive Summary">
-                      Executive Summary
-                    </SelectItem>
-                    <SelectItem value="Technical Approach">
-                      Technical Approach
-                    </SelectItem>
-                    <SelectItem value="Design">Design</SelectItem>
-                    <SelectItem value="Capabilities">Capabilities</SelectItem>
-                    <SelectItem value="Focus Documents">
-                      Focus Documents
-                    </SelectItem>
-                    <SelectItem value="Narrative">Narrative</SelectItem>
-                    <SelectItem value="Cover Page">Cover Page</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="status">Status</Label>
-                <Select defaultValue={item.status}>
-                  <SelectTrigger id="status" className="w-full">
-                    <SelectValue placeholder="Select a status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Done">Done</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Not Started">Not Started</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="target">Target</Label>
-                <Input id="target" defaultValue={item.target} />
-              </div>
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="limit">Limit</Label>
-                <Input id="limit" defaultValue={item.limit} />
-              </div>
-            </div>
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="reviewer">Reviewer</Label>
-              <Select defaultValue={item.reviewer}>
-                <SelectTrigger id="reviewer" className="w-full">
-                  <SelectValue placeholder="Select a reviewer" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-                  <SelectItem value="Jamik Tashpulatov">
-                    Jamik Tashpulatov
-                  </SelectItem>
-                  <SelectItem value="Emily Whalen">Emily Whalen</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </form>
-        </div>
-        <SheetFooter className="mt-auto flex gap-2 sm:flex-col sm:space-x-0">
-          <Button className="w-full">Submit</Button>
-          <SheetClose asChild>
-            <Button variant="outline" className="w-full">
-              Done
-            </Button>
-          </SheetClose>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+    <div className="flex items-center gap-2">
+      <WheatIcon className="size-5 text-green-600" />
+      <span className="font-medium text-green-800">
+        {item.crop || "Unknown Crop"}
+      </span>
+      {item.market && (
+        <Badge
+          variant="outline"
+          className="ml-2 border-green-200 text-green-700 bg-green-50"
+        >
+          {item.market}
+        </Badge>
+      )}
+    </div>
   );
 }
 
-// import * as React from "react";
-// import {
-//   DndContext,
-//   KeyboardSensor,
-//   MouseSensor,
-//   TouchSensor,
-//   closestCenter,
-//   useSensor,
-//   useSensors,
-// } from "@dnd-kit/core";
-// import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-// import {
-//   SortableContext,
-//   arrayMove,
-//   useSortable,
-//   verticalListSortingStrategy,
-// } from "@dnd-kit/sortable";
-// import { CSS } from "@dnd-kit/utilities";
-// import {
-//   flexRender,
-//   getCoreRowModel,
-//   getFacetedRowModel,
-//   getFacetedUniqueValues,
-//   getFilteredRowModel,
-//   getPaginationRowModel,
-//   getSortedRowModel,
-//   useReactTable,
-// } from "@tanstack/react-table";
-// import {
-//   AlertCircleIcon,
-//   BellIcon,
-//   CheckCircle2Icon,
-//   ChevronDownIcon,
-//   ChevronLeftIcon,
-//   ChevronRightIcon,
-//   ChevronsLeftIcon,
-//   ChevronsRightIcon,
-//   ColumnsIcon,
-//   GripVerticalIcon,
-//   LoaderIcon,
-//   MoreVerticalIcon,
-//   PlusIcon,
-//   ScanEyeIcon,
-//   WheatIcon,
-// } from "lucide-react";
-// import { toast } from "sonner";
-// import { z } from "zod";
+// Error Boundary Component
+export class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
 
-// import { useIsMobile } from "../../hooks/use-mobile";
-// import { Badge } from "../../components/ui/badge";
-// import { Button } from "../../components/ui/button";
-// import { Checkbox } from "../../components/ui/checkbox";
-// import {
-//   DropdownMenu,
-//   DropdownMenuCheckboxItem,
-//   DropdownMenuContent,
-//   DropdownMenuItem,
-//   DropdownMenuSeparator,
-//   DropdownMenuTrigger,
-// } from "../../components/ui/dropdown-menu";
-// import { Input } from "../../components/ui/input";
-// import { Label } from "../../components/ui/label";
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from "../../components/ui/select";
-// import {
-//   Table,
-//   TableBody,
-//   TableCell,
-//   TableHead,
-//   TableHeader,
-//   TableRow,
-// } from "../../components/ui/table";
-// import {
-//   Tabs,
-//   TabsContent,
-//   TabsList,
-//   TabsTrigger,
-// } from "../../components/ui/tabs";
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
 
-// // Agricultural price alert schema
-// export const schema = z.object({
-//   id: z.number(),
-//   crop: z.string(),
-//   type: z.enum(["above", "below"]),
-//   status: z.enum(["active", "inactive"]),
-//   threshold: z.number(),
-//   market: z.string(),
-//   lastTriggered: z.string().optional(),
-// });
+  componentDidCatch(error, errorInfo) {
+    console.error("Error caught by boundary:", error, errorInfo);
+  }
 
-// function DragHandle({ id }) {
-//   const { attributes, listeners } = useSortable({ id });
-
-//   return (
-//     <Button
-//       {...attributes}
-//       {...listeners}
-//       variant="ghost"
-//       size="icon"
-//       className="size-7 text-muted-foreground hover:bg-transparent"
-//     >
-//       <GripVerticalIcon className="size-3" />
-//       <span className="sr-only">Reorder alert</span>
-//     </Button>
-//   );
-// }
-
-// const columns = [
-//   {
-//     id: "drag",
-//     header: () => null,
-//     cell: ({ row }) => <DragHandle id={row.original.id} />,
-//   },
-//   {
-//     id: "select",
-//     header: ({ table }) => (
-//       <div className="flex items-center justify-center">
-//         <Checkbox
-//           checked={table.getIsAllPageRowsSelected()}
-//           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-//           aria-label="Select all"
-//         />
-//       </div>
-//     ),
-//     cell: ({ row }) => (
-//       <div className="flex items-center justify-center">
-//         <Checkbox
-//           checked={row.getIsSelected()}
-//           onCheckedChange={(value) => row.toggleSelected(!!value)}
-//           aria-label="Select row"
-//         />
-//       </div>
-//     ),
-//     enableSorting: false,
-//     enableHiding: false,
-//   },
-//   {
-//     accessorKey: "crop",
-//     header: "Crop",
-//     cell: ({ row }) => <TableCellViewer item={row.original} />,
-//     enableHiding: false,
-//   },
-//   {
-//     accessorKey: "type",
-//     header: "Alert Type",
-//     cell: ({ row }) => (
-//       <Badge
-//         variant={row.original.type === "above" ? "destructive" : "default"}
-//         className="capitalize"
-//       >
-//         {row.original.type}
-//       </Badge>
-//     ),
-//   },
-//   {
-//     accessorKey: "status",
-//     header: "Status",
-//     cell: ({ row }) => (
-//       <Badge
-//         variant={row.original.status === "active" ? "default" : "secondary"}
-//         className="gap-1"
-//       >
-//         {row.original.status === "active" ? (
-//           <CheckCircle2Icon className="size-3" />
-//         ) : (
-//           <LoaderIcon className="size-3" />
-//         )}
-//         {row.original.status}
-//       </Badge>
-//     ),
-//   },
-//   {
-//     accessorKey: "threshold",
-//     header: "Price Threshold",
-//     cell: ({ row }) => `₦${row.original.threshold.toLocaleString()}/100kg`,
-//   },
-//   {
-//     accessorKey: "market",
-//     header: "Market",
-//     cell: ({ row }) => row.original.market || "All Markets",
-//   },
-//   {
-//     accessorKey: "lastTriggered",
-//     header: "Last Triggered",
-//     cell: ({ row }) =>
-//       row.original.lastTriggered
-//         ? new Date(row.original.lastTriggered).toLocaleDateString()
-//         : "Never",
-//   },
-//   {
-//     id: "actions",
-//     cell: ({ row }) => (
-//       <DropdownMenu>
-//         <DropdownMenuTrigger asChild>
-//           <Button variant="ghost" size="icon">
-//             <MoreVerticalIcon className="size-4" />
-//             <span className="sr-only">Open menu</span>
-//           </Button>
-//         </DropdownMenuTrigger>
-//         <DropdownMenuContent align="end">
-//           <DropdownMenuItem>Edit Alert</DropdownMenuItem>
-//           <DropdownMenuItem>Duplicate Alert</DropdownMenuItem>
-//           <DropdownMenuItem>View Market Trends</DropdownMenuItem>
-//           <DropdownMenuSeparator />
-//           <DropdownMenuItem className="text-destructive">
-//             Delete Alert
-//           </DropdownMenuItem>
-//         </DropdownMenuContent>
-//       </DropdownMenu>
-//     ),
-//   },
-// ];
-
-// function DraggableRow({ row }) {
-//   const { transform, transition, setNodeRef, isDragging } = useSortable({
-//     id: row.original.id,
-//   });
-
-//   return (
-//     <TableRow
-//       ref={setNodeRef}
-//       style={{
-//         transform: CSS.Transform.toString(transform),
-//         transition,
-//       }}
-//       className={isDragging ? "bg-muted/50" : ""}
-//     >
-//       {row.getVisibleCells().map((cell) => (
-//         <TableCell key={cell.id}>
-//           {flexRender(cell.column.columnDef.cell, cell.getContext())}
-//         </TableCell>
-//       ))}
-//     </TableRow>
-//   );
-// }
-
-// export function PriceAlertsTable({ data: initialData }) {
-//   const [data, setData] = React.useState(initialData);
-//   const [rowSelection, setRowSelection] = React.useState({});
-//   const [columnVisibility, setColumnVisibility] = React.useState({});
-//   const [sorting, setSorting] = React.useState([]);
-//   const [pagination, setPagination] = React.useState({
-//     pageIndex: 0,
-//     pageSize: 10,
-//   });
-
-//   const sensors = useSensors(
-//     useSensor(MouseSensor),
-//     useSensor(TouchSensor),
-//     useSensor(KeyboardSensor)
-//   );
-
-//   const table = useReactTable({
-//     data,
-//     columns,
-//     state: { sorting, columnVisibility, rowSelection, pagination },
-//     getRowId: (row) => row.id.toString(),
-//     onRowSelectionChange: setRowSelection,
-//     onSortingChange: setSorting,
-//     onColumnVisibilityChange: setColumnVisibility,
-//     onPaginationChange: setPagination,
-//     getCoreRowModel: getCoreRowModel(),
-//     getSortedRowModel: getSortedRowModel(),
-//     getPaginationRowModel: getPaginationRowModel(),
-//   });
-
-//   function handleDragEnd(event) {
-//     const { active, over } = event;
-//     if (active.id !== over?.id) {
-//       setData((data) => {
-//         const oldIndex = data.findIndex((d) => d.id === active.id);
-//         const newIndex = data.findIndex((d) => d.id === over?.id);
-//         return arrayMove(data, oldIndex, newIndex);
-//       });
-//     }
-//   }
-
-//   return (
-//     <Tabs defaultValue="alerts">
-//       <div className="flex items-center justify-between p-4">
-//         <TabsList>
-//           <TabsTrigger value="alerts">Price Alerts</TabsTrigger>
-//           <TabsTrigger value="markets">Tracked Markets</TabsTrigger>
-//         </TabsList>
-
-//         <div className="flex gap-2">
-//           <DropdownMenu>
-//             <DropdownMenuTrigger asChild>
-//               <Button variant="outline">
-//                 <ColumnsIcon className="mr-2 size-4" />
-//                 Columns
-//               </Button>
-//             </DropdownMenuTrigger>
-//             <DropdownMenuContent>
-//               {table
-//                 .getAllColumns()
-//                 .filter((column) => column.getCanHide())
-//                 .map((column) => (
-//                   <DropdownMenuCheckboxItem
-//                     key={column.id}
-//                     checked={column.getIsVisible()}
-//                     onCheckedChange={(value) =>
-//                       column.toggleVisibility(!!value)
-//                     }
-//                   >
-//                     {column.id}
-//                   </DropdownMenuCheckboxItem>
-//                 ))}
-//             </DropdownMenuContent>
-//           </DropdownMenu>
-//           <Button>
-//             <PlusIcon className="mr-2 size-4" />
-//             New Alert
-//           </Button>
-//         </div>
-//       </div>
-
-//       <TabsContent value="alerts">
-//         <div className="rounded-lg border">
-//           <DndContext
-//             sensors={sensors}
-//             collisionDetection={closestCenter}
-//             modifiers={[restrictToVerticalAxis]}
-//             onDragEnd={handleDragEnd}
-//           >
-//             <Table>
-//               <TableHeader>
-//                 {table.getHeaderGroups().map((headerGroup) => (
-//                   <TableRow key={headerGroup.id}>
-//                     {headerGroup.headers.map((header) => (
-//                       <TableHead key={header.id}>
-//                         {flexRender(
-//                           header.column.columnDef.header,
-//                           header.getContext()
-//                         )}
-//                       </TableHead>
-//                     ))}
-//                   </TableRow>
-//                 ))}
-//               </TableHeader>
-//               <TableBody>
-//                 <SortableContext
-//                   items={data.map((d) => d.id)}
-//                   strategy={verticalListSortingStrategy}
-//                 >
-//                   {table.getRowModel().rows.map((row) => (
-//                     <DraggableRow key={row.id} row={row} />
-//                   ))}
-//                 </SortableContext>
-//               </TableBody>
-//             </Table>
-//           </DndContext>
-//         </div>
-
-//         <div className="flex items-center justify-between p-4">
-//           <div className="text-sm text-muted-foreground">
-//             {table.getFilteredSelectedRowModel().rows.length} of{" "}
-//             {table.getFilteredRowModel().rows.length} alerts selected
-//           </div>
-//           <div className="flex items-center gap-6">
-//             <div className="flex items-center gap-2">
-//               <Label>Rows per page</Label>
-//               <Select
-//                 value={pagination.pageSize.toString()}
-//                 onValueChange={(value) => table.setPageSize(Number(value))}
-//               >
-//                 <SelectTrigger className="w-20">
-//                   <SelectValue />
-//                 </SelectTrigger>
-//                 <SelectContent>
-//                   {[10, 20, 30].map((size) => (
-//                     <SelectItem key={size} value={size.toString()}>
-//                       {size}
-//                     </SelectItem>
-//                   ))}
-//                 </SelectContent>
-//               </Select>
-//             </div>
-//             <div className="flex items-center gap-2">
-//               <Button
-//                 variant="outline"
-//                 size="icon"
-//                 onClick={() => table.previousPage()}
-//                 disabled={!table.getCanPreviousPage()}
-//               >
-//                 <ChevronLeftIcon className="size-4" />
-//               </Button>
-//               <span>
-//                 Page {table.getState().pagination.pageIndex + 1} of{" "}
-//                 {table.getPageCount()}
-//               </span>
-//               <Button
-//                 variant="outline"
-//                 size="icon"
-//                 onClick={() => table.nextPage()}
-//                 disabled={!table.getCanNextPage()}
-//               >
-//                 <ChevronRightIcon className="size-4" />
-//               </Button>
-//             </div>
-//           </div>
-//         </div>
-//       </TabsContent>
-
-//       <TabsContent value="markets">{/* Tracked Markets Content */}</TabsContent>
-//     </Tabs>
-//   );
-// }
-
-// function TableCellViewer({ item }) {
-//   return (
-//     <div className="flex items-center gap-2">
-//       <WheatIcon className="size-4 text-amber-600" />
-//       <span className="font-medium">{item.crop}</span>
-//       <Badge variant="outline" className="ml-2">
-//         {item.market}
-//       </Badge>
-//     </div>
-//   );
-// }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-4 bg-green-50 text-green-700 rounded-lg border border-green-200">
+          <AlertCircleIcon className="inline-block mr-2 text-green-600" />
+          Something went wrong displaying this data.
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
