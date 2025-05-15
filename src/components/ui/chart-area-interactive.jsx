@@ -28,37 +28,106 @@ import {
   SelectValue,
 } from "../../components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "../../components/ui/toggle-group";
-import { WheatIcon, RiceBowlIcon, GrainIcon } from "lucide-react";
+import { WheatIcon } from "lucide-react";
 
-// Enhanced agricultural price data with more frequent data points
 const priceData = [
-  { date: "2024-04-01", maize: 32000, rice: 41000, sorghum: 28000 },
-  { date: "2024-04-15", maize: 34500, rice: 41500, sorghum: 29000 },
-  { date: "2024-05-01", maize: 35500, rice: 43000, sorghum: 28500 },
-  { date: "2024-05-15", maize: 36500, rice: 44000, sorghum: 30000 },
-  { date: "2024-06-01", maize: 35000, rice: 42000, sorghum: 29500 },
-  { date: "2024-06-15", maize: 34000, rice: 41000, sorghum: 28500 },
-  { date: "2024-06-30", maize: 33500, rice: 41500, sorghum: 28000 },
+  {
+    date: "2024-04-01",
+    maize: 32000,
+    rice: 41000,
+    sorghum: 28000,
+    beans: 30000,
+  },
+  {
+    date: "2024-04-15",
+    maize: 34500,
+    rice: 41500,
+    sorghum: 29000,
+    beans: 31000,
+  },
+  {
+    date: "2024-05-01",
+    maize: 35500,
+    rice: 43000,
+    sorghum: 28500,
+    beans: 32000,
+  },
+  {
+    date: "2024-05-15",
+    maize: 36500,
+    rice: 44000,
+    sorghum: 30000,
+    beans: 33000,
+  },
+  {
+    date: "2024-06-01",
+    maize: 35000,
+    rice: 42000,
+    sorghum: 29500,
+    beans: 32500,
+  },
+  {
+    date: "2025-06-15",
+    maize: 34000,
+    rice: 41000,
+    sorghum: 28500,
+    beans: 31500,
+  },
+  {
+    date: "2025-06-30",
+    maize: 33500,
+    rice: 41500,
+    sorghum: 28000,
+    beans: 31000,
+  },
+  {
+    date: "2025-05-15",
+    maize: 36500,
+    rice: 44000,
+    sorghum: 30000,
+    beans: 33000,
+  },
+  {
+    date: "2025-06-01",
+    maize: 35000,
+    rice: 42000,
+    sorghum: 29500,
+    beans: 32500,
+  },
+  {
+    date: "2025-06-15",
+    maize: 34000,
+    rice: 41000,
+    sorghum: 28500,
+    beans: 31500,
+  },
+  {
+    date: "2025-06-30",
+    maize: 33500,
+    rice: 41500,
+    sorghum: 28000,
+    beans: 31000,
+  },
 ];
 
 const chartConfig = {
   maize: {
     label: "Maize",
-    color: "#16a34a", // Green-600
+    color: "#16a34a",
     icon: <WheatIcon className="h-4 w-4" />,
-    gradient: { start: "#22c55e", end: "#dcfce7" }, // Green-500 to Green-100
+    gradient: { start: "#22c55e", end: "#dcfce7" },
   },
   rice: {
     label: "Rice",
-    color: "#2563eb", // Blue-600
-    icon: <RiceBowlIcon className="h-4 w-4" />,
-    gradient: { start: "#3b82f6", end: "#dbeafe" }, // Blue-500 to Blue-100
+    color: "#2563eb",
+    icon: <WheatIcon className="h-4 w-4" />,
+    gradient: { start: "#3b82f6", end: "#dbeafe" },
   },
   sorghum: {
     label: "Sorghum",
-    color: "#ea580c", // Orange-600
-    icon: <GrainIcon className="h-4 w-4" />,
-    gradient: { start: "#f97316", end: "#ffedd5" }, // Orange-500 to Orange-100
+    color: "#ea580c",
+    icon: <WheatIcon className="h-4 w-4" />,
+    gradient: { start: "#f97316", end: "#ffedd5" },
   },
 };
 
