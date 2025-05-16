@@ -25,7 +25,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "../../components/ui/sidebar";
-import CropWiseLogo from "../LandingPage/Logo/logo";
 
 const data = {
   user: {

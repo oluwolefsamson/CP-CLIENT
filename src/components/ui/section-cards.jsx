@@ -1,7 +1,6 @@
 import React from "react";
 import {
   TrendingUpIcon,
-  TrendingDownIcon,
   AlertCircleIcon,
   WarehouseIcon,
   CoinsIcon,
@@ -64,10 +63,10 @@ export function SectionCards() {
       {agriculturalCards.map((card, index) => (
         <Card
           key={index}
-          className="group relative overflow-hidden border-0 bg-gradient-to-br from-green-50/60 to-green-100/30 shadow-xl transition-all duration-300 hover:shadow-2xl"
+          className="relative overflow-hidden border-0 bg-white"
         >
-          {/* Modern agricultural pattern */}
-          <div className="absolute inset-0 opacity-10 [mask-image:linear-gradient(to_bottom,transparent,black)]">
+          {/* Subtle agricultural pattern */}
+          <div className="absolute inset-0 opacity-20 [mask-image:linear-gradient(to_bottom,transparent,black)]">
             <svg
               className="h-full w-full"
               viewBox="0 0 100 100"
@@ -85,7 +84,7 @@ export function SectionCards() {
                   y1="0"
                   x2="0"
                   y2="5"
-                  className="stroke-green-200"
+                  className="stroke-green-100"
                   strokeWidth="1"
                 />
               </pattern>
@@ -93,25 +92,25 @@ export function SectionCards() {
             </svg>
           </div>
 
-          {/* Animated gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-green-50/30 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          {/* Green accent border */}
+          <div className="absolute left-0 top-0 h-full w-1 bg-green-200" />
 
           <CardHeader className="relative z-10">
             <div className="flex items-start justify-between">
               <div>
-                <CardDescription className="mb-2 text-sm font-semibold uppercase tracking-wide text-green-600">
+                <CardDescription className="mb-2 text-sm font-semibold uppercase tracking-wide text-green-700">
                   {card.title}
                 </CardDescription>
-                <CardTitle className="text-3xl font-bold text-green-900">
+                <CardTitle className="text-3xl font-bold text-gray-900">
                   {card.value}
                   <span className="ml-2 text-base font-medium text-green-600">
                     {card.unit}
                   </span>
                 </CardTitle>
               </div>
-              <div className="rounded-lg bg-green-100 p-2 shadow-inner">
+              <div className="rounded-lg bg-green-50 p-2">
                 {React.cloneElement(card.icon, {
-                  className: "h-6 w-6 text-green-700",
+                  className: "h-6 w-6 text-green-600",
                 })}
               </div>
             </div>
@@ -122,7 +121,7 @@ export function SectionCards() {
               <span
                 className={`flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium ${
                   card.status === "alert"
-                    ? "animate-pulse bg-amber-100 text-amber-700"
+                    ? "bg-amber-100 text-amber-700"
                     : card.status === "positive"
                       ? "bg-green-100 text-green-700"
                       : "bg-emerald-100 text-emerald-700"
@@ -143,7 +142,7 @@ export function SectionCards() {
             <div className="w-full space-y-2">
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-green-100">
                 <div
-                  className={`h-full rounded-full transition-all duration-1000 ${
+                  className={`h-full rounded-full ${
                     card.status === "alert"
                       ? "bg-amber-400"
                       : card.status === "positive"

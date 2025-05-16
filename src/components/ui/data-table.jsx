@@ -1,4 +1,5 @@
 import * as React from "react";
+import { toast } from "sonner";
 import {
   DndContext,
   KeyboardSensor,
@@ -36,11 +37,19 @@ import {
   WheatIcon,
 } from "lucide-react";
 import { z } from "zod";
+import { Toaster } from "sonner";
 
 // UI Components
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
 import { Checkbox } from "../../components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../../components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -49,6 +58,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../components/ui/dropdown-menu";
+import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import {
   Select,
@@ -72,14 +82,14 @@ import {
   TabsTrigger,
 } from "../../components/ui/tabs";
 
-// Updated Agricultural price alert schema with optional fields and extended enums
+// Schema validation
 export const schema = z.object({
   id: z.number().positive().optional(),
-  crop: z.string().min(1).optional(),
-  type: z.enum(["above", "below", "other"]).optional(),
+  crop: z.string().min(1, "Crop type is required"),
+  type: z.enum(["above", "below"]),
   status: z.enum(["active", "inactive", "pending"]).optional(),
-  threshold: z.number().positive().optional(),
-  market: z.string().min(1).optional(),
+  threshold: z.number().positive("Valid price required"),
+  market: z.string().min(1, "Market required").optional(),
   lastTriggered: z.string().optional(),
 });
 
@@ -112,6 +122,33 @@ const sampleData = [
   },
 ];
 
+const sampleMarkets = [
+  {
+    id: 1,
+    name: "Lagos Main Market",
+    location: "Lagos, Nigeria",
+    activeAlerts: 3,
+    lastUpdate: "2024-03-20",
+    status: "active",
+  },
+  {
+    id: 2,
+    name: "Kano Central Market",
+    location: "Kano, Nigeria",
+    activeAlerts: 1,
+    lastUpdate: "2024-03-19",
+    status: "active",
+  },
+  {
+    id: 3,
+    name: "Abuja Wholesale",
+    location: "Abuja, Nigeria",
+    activeAlerts: 0,
+    lastUpdate: "2024-03-18",
+    status: "inactive",
+  },
+];
+
 function DragHandle({ id }) {
   const { attributes, listeners } = useSortable({ id });
 
@@ -121,7 +158,7 @@ function DragHandle({ id }) {
       {...listeners}
       variant="ghost"
       size="icon"
-      className="size-7 text-green-600 hover:bg-green-50"
+      className="size-7 text-green-600 hover:bg-green-50/20"
     >
       <GripVerticalIcon className="size-3.5" />
       <span className="sr-only">Reorder alert</span>
@@ -175,7 +212,7 @@ const columns = [
     cell: ({ row }) => (
       <Badge
         variant={row.original.type === "above" ? "default" : "secondary"}
-        className="capitalize bg-green-100 text-green-800 hover:bg-green-200"
+        className="capitalize bg-green-50/30 text-green-800 hover:bg-green-50/40"
       >
         {row.original.type || "N/A"}
       </Badge>
@@ -188,7 +225,7 @@ const columns = [
     cell: ({ row }) => (
       <Badge
         variant={row.original.status === "active" ? "default" : "secondary"}
-        className="gap-1 bg-green-50 text-green-700 border-green-200"
+        className="gap-1 bg-green-50/30 text-green-700 border-green-200"
       >
         {row.original.status === "active" ? (
           <CheckCircle2Icon className="size-3.5 text-green-600" />
@@ -240,24 +277,24 @@ const columns = [
           <Button
             variant="ghost"
             size="icon"
-            className="text-green-600 hover:bg-green-50"
+            className="text-green-600 hover:bg-green-50/20"
           >
             <MoreVerticalIcon className="size-4" />
             <span className="sr-only">Open menu</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="border-green-100">
-          <DropdownMenuItem className="focus:bg-green-50">
+        <DropdownMenuContent align="end" className="border-green-100 bg-white">
+          <DropdownMenuItem className="focus:bg-green-50/30 text-green-700">
             Edit Alert
           </DropdownMenuItem>
-          <DropdownMenuItem className="focus:bg-green-50">
+          <DropdownMenuItem className="focus:bg-green-50/30 text-green-700">
             Duplicate Alert
           </DropdownMenuItem>
-          <DropdownMenuItem className="focus:bg-green-50">
+          <DropdownMenuItem className="focus:bg-green-50/30 text-green-700">
             View Market Trends
           </DropdownMenuItem>
           <DropdownMenuSeparator className="bg-green-100" />
-          <DropdownMenuItem className="text-red-600 focus:bg-red-50">
+          <DropdownMenuItem className="text-red-600 focus:bg-red-50/30">
             Delete Alert
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -284,7 +321,7 @@ function DraggableRow({ row }) {
         transform: CSS.Transform.toString(transform),
         transition,
       }}
-      className={`${isDragging ? "bg-green-50" : "hover:bg-green-50"} border-b border-green-100`}
+      className={`${isDragging ? "bg-green-50/30" : "hover:bg-green-50/20"} border-b border-green-100 bg-white`}
     >
       {row.getVisibleCells().map((cell) => (
         <TableCell key={cell.id} className="py-3">
@@ -296,6 +333,15 @@ function DraggableRow({ row }) {
 }
 
 export function DataTable({ data = sampleData }) {
+  const [openNewAlert, setOpenNewAlert] = React.useState(false);
+  const [newAlert, setNewAlert] = React.useState({
+    crop: "",
+    type: "above",
+    threshold: "",
+    market: "",
+  });
+  const [formErrors, setFormErrors] = React.useState({});
+
   const [tableData, setTableData] = React.useState(() => {
     try {
       return data.map((item) =>
@@ -343,6 +389,40 @@ export function DataTable({ data = sampleData }) {
     getPaginationRowModel: getPaginationRowModel(),
   });
 
+  const handleCreateAlert = () => {
+    try {
+      const newId =
+        tableData.length > 0 ? Math.max(...tableData.map((d) => d.id)) + 1 : 1;
+
+      const alertData = schema.parse({
+        id: newId,
+        crop: newAlert.crop,
+        type: newAlert.type,
+        status: "active",
+        threshold: Number(newAlert.threshold),
+        market: newAlert.market || "All Markets",
+      });
+
+      setTableData((prev) => [alertData, ...prev]);
+      setOpenNewAlert(false);
+      setNewAlert({ crop: "", type: "above", threshold: "", market: "" });
+      setFormErrors({});
+
+      toast.success("Price alert created successfully", {
+        description: `${alertData.crop} alert set for ₦${alertData.threshold.toLocaleString()}/100kg`,
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errors = error.flatten().fieldErrors;
+        setFormErrors(errors);
+
+        toast.error("Validation failed", {
+          description: Object.values(errors).flat().join(", "),
+        });
+      }
+    }
+  };
+
   function handleDragEnd(event) {
     const { active, over } = event;
     if (!active?.id || !over?.id) return;
@@ -361,11 +441,26 @@ export function DataTable({ data = sampleData }) {
 
   return (
     <div className="mx-4 lg:mx-6">
-      {" "}
-      {/* Added horizontal margins */}
+      <Toaster
+        position="top-center"
+        theme="light"
+        richColors
+        closeButton
+        expand={true}
+        visibleToasts={3}
+        toastOptions={{
+          classNames: {
+            toast: "border-green-200",
+            title: "text-green-800",
+            description: "text-green-600",
+            success: "bg-green-50",
+            error: "bg-red-50 border-red-200",
+          },
+        }}
+      />
+
       <Tabs defaultValue="alerts">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-green-50 rounded-t-lg border-b border-green-100">
-          {/* Tabs - Stack on mobile, row on desktop */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-white rounded-t-lg border-b border-green-100">
           <TabsList className="bg-green-100 w-full sm:w-auto">
             <TabsTrigger
               value="alerts"
@@ -381,19 +476,18 @@ export function DataTable({ data = sampleData }) {
             </TabsTrigger>
           </TabsList>
 
-          {/* Buttons - Stack on mobile, row on desktop */}
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
-                  className="border-green-200 text-green-700 hover:bg-green-100 w-full sm:w-auto justify-between sm:justify-start"
+                  className="border-green-200 text-green-700 hover:bg-green-50/20 w-full sm:w-auto justify-between sm:justify-start"
                 >
                   <ColumnsIcon className="mr-0 sm:mr-2 size-4 text-green-600" />
-                  <span className=" sm:inline">Columns</span>
+                  <span className="sm:inline">Columns</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="border-green-100 w-[200px]">
+              <DropdownMenuContent className="border-green-100 bg-white w-[200px]">
                 {table
                   .getAllColumns()
                   .filter((column) => column.getCanHide())
@@ -404,7 +498,7 @@ export function DataTable({ data = sampleData }) {
                       onCheckedChange={(value) =>
                         column.toggleVisibility(!!value)
                       }
-                      className="focus:bg-green-50 text-green-700 text-sm"
+                      className="focus:bg-green-50/30 text-green-700 text-sm"
                     >
                       {column.id}
                     </DropdownMenuCheckboxItem>
@@ -412,10 +506,129 @@ export function DataTable({ data = sampleData }) {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto justify-between sm:justify-start">
-              <PlusIcon className="mr-0 sm:mr-2 size-4" />
-              <span className=" sm:inline">New Alert</span>
-            </Button>
+            <Dialog open={openNewAlert} onOpenChange={setOpenNewAlert}>
+              <DialogTrigger asChild>
+                <Button className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto justify-between sm:justify-start">
+                  <PlusIcon className="mr-0 sm:mr-2 size-4" />
+                  <span className="sm:inline">New Alert</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-white border-green-200 max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="text-green-800">
+                    Create New Price Alert
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-green-700">Crop Type</Label>
+                    <Input
+                      value={newAlert.crop}
+                      onChange={(e) =>
+                        setNewAlert((prev) => ({
+                          ...prev,
+                          crop: e.target.value,
+                        }))
+                      }
+                      className="border-green-200"
+                      placeholder="e.g. Maize, Rice..."
+                    />
+                    {formErrors.crop && (
+                      <span className="text-red-500 text-sm">
+                        {formErrors.crop[0]}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-green-700">Alert Type</Label>
+                    <Select
+                      value={newAlert.type}
+                      onValueChange={(value) =>
+                        setNewAlert((prev) => ({ ...prev, type: value }))
+                      }
+                    >
+                      <SelectTrigger className="border-green-200 text-green-700">
+                        <SelectValue placeholder="Select alert type" />
+                      </SelectTrigger>
+                      <SelectContent className="border-green-200 bg-white">
+                        <SelectItem
+                          value="above"
+                          className="focus:bg-green-50/30"
+                        >
+                          Price Above
+                        </SelectItem>
+                        <SelectItem
+                          value="below"
+                          className="focus:bg-green-50/30"
+                        >
+                          Price Below
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-green-700">Threshold Price</Label>
+                    <Input
+                      type="number"
+                      value={newAlert.threshold}
+                      onChange={(e) =>
+                        setNewAlert((prev) => ({
+                          ...prev,
+                          threshold: e.target.value,
+                        }))
+                      }
+                      className="border-green-200"
+                      placeholder="Enter price per 100kg"
+                    />
+                    {formErrors.threshold && (
+                      <span className="text-red-500 text-sm">
+                        {formErrors.threshold[0]}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-green-700">
+                      Specific Market (optional)
+                    </Label>
+                    <Input
+                      value={newAlert.market}
+                      onChange={(e) =>
+                        setNewAlert((prev) => ({
+                          ...prev,
+                          market: e.target.value,
+                        }))
+                      }
+                      className="border-green-200"
+                      placeholder="All markets"
+                    />
+                    {formErrors.market && (
+                      <span className="text-red-500 text-sm">
+                        {formErrors.market[0]}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex justify-end gap-2 mt-6">
+                    <Button
+                      variant="outline"
+                      className="border-green-200 text-green-700 hover:bg-green-50/20"
+                      onClick={() => setOpenNewAlert(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      className="bg-green-600 hover:bg-green-700"
+                      onClick={handleCreateAlert}
+                    >
+                      Create Alert
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
@@ -450,7 +663,7 @@ export function DataTable({ data = sampleData }) {
                       </TableBody>
                     ) : (
                       <>
-                        <TableHeader className="bg-green-50 sticky top-0 z-10">
+                        <TableHeader className="bg-white sticky top-0 z-10">
                           {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow
                               key={headerGroup.id}
@@ -460,7 +673,7 @@ export function DataTable({ data = sampleData }) {
                                 <TableHead
                                   key={header.id}
                                   style={{ width: header.getSize() }}
-                                  className="text-green-700 font-semibold py-3 bg-green-50"
+                                  className="text-gray-400 text-md font-bold py-3 bg-white"
                                 >
                                   {flexRender(
                                     header.column.columnDef.header,
@@ -489,7 +702,7 @@ export function DataTable({ data = sampleData }) {
             </div>
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-green-50 border-t border-green-100">
+          <div className="flex items-center justify-between p-4 bg-white border-t border-green-100">
             <div className="text-sm text-green-600">
               {table.getFilteredSelectedRowModel().rows.length} of{" "}
               {table.getFilteredRowModel().rows.length} alerts selected
@@ -504,12 +717,12 @@ export function DataTable({ data = sampleData }) {
                   <SelectTrigger className="w-20 border-green-200 text-green-700">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="border-green-100">
+                  <SelectContent className="border-green-100 bg-white">
                     {[10, 20, 30].map((size) => (
                       <SelectItem
                         key={size}
                         value={size.toString()}
-                        className="focus:bg-green-50 text-green-700"
+                        className="focus:bg-green-50/30 text-green-700"
                       >
                         {size}
                       </SelectItem>
@@ -523,7 +736,7 @@ export function DataTable({ data = sampleData }) {
                   size="icon"
                   onClick={() => table.previousPage()}
                   disabled={!table.getCanPreviousPage()}
-                  className="border-green-200 text-green-700 hover:bg-green-100"
+                  className="border-green-200 text-green-700 hover:bg-green-50/20"
                 >
                   <ChevronLeftIcon className="size-4" />
                 </Button>
@@ -536,7 +749,7 @@ export function DataTable({ data = sampleData }) {
                   size="icon"
                   onClick={() => table.nextPage()}
                   disabled={!table.getCanNextPage()}
-                  className="border-green-200 text-green-700 hover:bg-green-100"
+                  className="border-green-200 text-green-700 hover:bg-green-50/20"
                 >
                   <ChevronRightIcon className="size-4" />
                 </Button>
@@ -546,7 +759,76 @@ export function DataTable({ data = sampleData }) {
         </TabsContent>
 
         <TabsContent value="markets">
-          {/* Tracked Markets Content */}
+          <div className="rounded-b-lg border border-green-100 bg-white p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-green-800">
+                Tracked Markets
+              </h3>
+              <Button className="bg-green-600 hover:bg-green-700 text-white">
+                <PlusIcon className="mr-2 size-4" />
+                Add Market
+              </Button>
+            </div>
+
+            <div className="border border-green-100 rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader className="bg-green-50">
+                  <TableRow className="border-b border-green-100">
+                    <TableHead className="text-green-700">Market</TableHead>
+                    <TableHead className="text-green-700">Location</TableHead>
+                    <TableHead className="text-green-700">
+                      Active Alerts
+                    </TableHead>
+                    <TableHead className="text-green-700">
+                      Last Price Update
+                    </TableHead>
+                    <TableHead className="text-green-700">Status</TableHead>
+                    <TableHead className="text-green-700">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {sampleMarkets.map((market) => (
+                    <TableRow
+                      key={market.id}
+                      className="border-b border-green-100 hover:bg-green-50/20"
+                    >
+                      <TableCell className="font-medium text-green-800">
+                        {market.name}
+                      </TableCell>
+                      <TableCell>{market.location}</TableCell>
+                      <TableCell>
+                        <Badge className="bg-green-50/30 text-green-700">
+                          {market.activeAlerts}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {new Date(market.lastUpdate).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            market.status === "active" ? "default" : "secondary"
+                          }
+                          className="bg-green-50/30 text-green-700"
+                        >
+                          {market.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-green-600 hover:bg-green-50/20"
+                        >
+                          <MoreVerticalIcon className="size-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
@@ -563,7 +845,7 @@ function TableCellViewer({ item }) {
       {item.market && (
         <Badge
           variant="outline"
-          className="ml-2 border-green-200 text-green-700 bg-green-50"
+          className="ml-2 border-green-200 text-green-700 bg-green-50/30"
         >
           {item.market}
         </Badge>
@@ -572,7 +854,6 @@ function TableCellViewer({ item }) {
   );
 }
 
-// Error Boundary Component
 export class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
