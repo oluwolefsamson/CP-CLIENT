@@ -17,7 +17,6 @@ const NearbyMarkets = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API call
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 2000);
@@ -104,7 +103,6 @@ const NearbyMarkets = () => {
   ];
   return (
     <div className="bg-white rounded-lg p-6 shadow-lg border border-gray-100 my-2 mx-4">
-      {/* Header */}
       <div className="flex items-center gap-3 mb-8">
         <MapPinIcon className="w-7 h-7 text-green-600" />
         <div>
@@ -117,7 +115,6 @@ const NearbyMarkets = () => {
         </div>
       </div>
 
-      {/* Market Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {isLoading
           ? Array.from({ length: 4 }).map((_, index) => (
@@ -169,7 +166,6 @@ const NearbyMarkets = () => {
                 key={market.id}
                 className="p-5 bg-green-50/20 rounded-xl border border-green-100 hover:bg-green-50/40 transition-colors"
               >
-                {/* Market Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">
@@ -188,7 +184,6 @@ const NearbyMarkets = () => {
                   </button>
                 </div>
 
-                {/* Details Grid */}
                 <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                   <div className="flex items-center gap-3 text-gray-700 bg-white p-3 rounded-lg">
                     <div className="bg-green-100 p-2 rounded-full">
@@ -215,7 +210,6 @@ const NearbyMarkets = () => {
                   </div>
                 </div>
 
-                {/* Rating Section */}
                 <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
                   <div className="flex items-center gap-1">
                     <StarIcon className="w-4 h-4 text-yellow-500" />
@@ -228,7 +222,6 @@ const NearbyMarkets = () => {
                   </div>
                 </div>
 
-                {/* Recent Visitors */}
                 <div className="mt-4 pt-4 border-t border-green-100">
                   <div className="flex items-center gap-3">
                     <div className="flex -space-x-2">
@@ -247,7 +240,6 @@ const NearbyMarkets = () => {
                   </div>
                 </div>
 
-                {/* Map Button */}
                 <button
                   onClick={() => handleShowRoute(market)}
                   className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg flex items-center justify-center gap-2 transition-colors"
@@ -262,7 +254,6 @@ const NearbyMarkets = () => {
       {isMapOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-4xl h-[80vh] flex flex-col">
-            {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h3 className="text-xl font-semibold text-gray-900">
                 Route to {selectedMarket?.name}
