@@ -63,39 +63,12 @@ export function SectionCards() {
       {agriculturalCards.map((card, index) => (
         <Card
           key={index}
-          className="relative overflow-hidden border-0 bg-white"
+          className="relative overflow-hidden border-0 bg-white shadow-sm"
         >
-          {/* Subtle agricultural pattern */}
-          <div className="absolute inset-0 opacity-20 [mask-image:linear-gradient(to_bottom,transparent,black)]">
-            <svg
-              className="h-full w-full"
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-            >
-              <pattern
-                id="diagonalHatch"
-                width="5"
-                height="5"
-                patternTransform="rotate(45 0 0)"
-                patternUnits="userSpaceOnUse"
-              >
-                <line
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="5"
-                  className="stroke-green-100"
-                  strokeWidth="1"
-                />
-              </pattern>
-              <rect width="100%" height="100%" fill="url(#diagonalHatch)" />
-            </svg>
-          </div>
-
-          {/* Green accent border */}
+          {/* Left accent border */}
           <div className="absolute left-0 top-0 h-full w-1 bg-green-200" />
 
-          <CardHeader className="relative z-10">
+          <CardHeader className="relative">
             <div className="flex items-start justify-between">
               <div>
                 <CardDescription className="mb-2 text-sm font-semibold uppercase tracking-wide text-green-700">
@@ -116,7 +89,7 @@ export function SectionCards() {
             </div>
           </CardHeader>
 
-          <CardFooter className="relative z-10 flex flex-col items-start gap-3">
+          <CardFooter className="relative flex flex-col items-start gap-3">
             <div className="flex items-center gap-3">
               <span
                 className={`flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium ${

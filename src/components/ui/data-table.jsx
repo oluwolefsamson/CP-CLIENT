@@ -34,7 +34,6 @@ import {
   LoaderIcon,
   MoreVerticalIcon,
   PlusIcon,
-  WheatIcon,
 } from "lucide-react";
 import { z } from "zod";
 import { Toaster } from "sonner";
@@ -158,7 +157,7 @@ function DragHandle({ id }) {
       {...listeners}
       variant="ghost"
       size="icon"
-      className="size-7 text-green-600 hover:bg-green-50/20"
+      className="size-7 text-gray-600 hover:bg-gray-100"
     >
       <GripVerticalIcon className="size-3.5" />
       <span className="sr-only">Reorder alert</span>
@@ -181,7 +180,7 @@ const columns = [
           checked={table.getIsAllPageRowsSelected()}
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
-          className="border-green-300 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-700"
+          className="border-gray-300 data-[state=checked]:bg-gray-800 data-[state=checked]:border-gray-900"
         />
       </div>
     ),
@@ -191,7 +190,7 @@ const columns = [
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
           aria-label="Select row"
-          className="border-green-300 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-700"
+          className="border-gray-300 data-[state=checked]:bg-gray-800 data-[state=checked]:border-gray-900"
         />
       </div>
     ),
@@ -210,10 +209,7 @@ const columns = [
     accessorKey: "type",
     header: "Alert Type",
     cell: ({ row }) => (
-      <Badge
-        variant={row.original.type === "above" ? "default" : "secondary"}
-        className="capitalize bg-green-50/30 text-green-800 hover:bg-green-50/40"
-      >
+      <Badge className="bg-gray-100 text-gray-700 capitalize">
         {row.original.type || "N/A"}
       </Badge>
     ),
@@ -224,13 +220,16 @@ const columns = [
     header: "Status",
     cell: ({ row }) => (
       <Badge
-        variant={row.original.status === "active" ? "default" : "secondary"}
-        className="gap-1 bg-green-50/30 text-green-700 border-green-200"
+        className={`gap-1 ${
+          row.original.status === "active"
+            ? "bg-green-100 text-green-700"
+            : "bg-gray-100 text-gray-700"
+        }`}
       >
         {row.original.status === "active" ? (
           <CheckCircle2Icon className="size-3.5 text-green-600" />
         ) : (
-          <LoaderIcon className="size-3.5 text-green-600 animate-spin" />
+          <LoaderIcon className="size-3.5 text-gray-600 animate-spin" />
         )}
         {row.original.status || "N/A"}
       </Badge>
@@ -243,7 +242,7 @@ const columns = [
     cell: ({ row }) => {
       const threshold = Number(row.original.threshold) || 0;
       return (
-        <span className="font-semibold text-green-700">
+        <span className="font-semibold text-gray-800">
           ₦{threshold.toLocaleString()}/100kg
         </span>
       );
@@ -261,11 +260,11 @@ const columns = [
     header: "Last Triggered",
     cell: ({ row }) =>
       row.original.lastTriggered ? (
-        <span className="text-green-600">
+        <span className="text-gray-600">
           {new Date(row.original.lastTriggered).toLocaleDateString()}
         </span>
       ) : (
-        <span className="text-green-400">Never</span>
+        <span className="text-gray-400">Never</span>
       ),
     size: 150,
   },
@@ -277,23 +276,23 @@ const columns = [
           <Button
             variant="ghost"
             size="icon"
-            className="text-green-600 hover:bg-green-50/20"
+            className="text-gray-600 hover:bg-gray-100"
           >
             <MoreVerticalIcon className="size-4" />
             <span className="sr-only">Open menu</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="border-green-100 bg-white">
-          <DropdownMenuItem className="focus:bg-green-50/30 text-green-700">
+        <DropdownMenuContent align="end" className="border-gray-200 bg-white">
+          <DropdownMenuItem className="focus:bg-gray-100 text-gray-700">
             Edit Alert
           </DropdownMenuItem>
-          <DropdownMenuItem className="focus:bg-green-50/30 text-green-700">
+          <DropdownMenuItem className="focus:bg-gray-100 text-gray-700">
             Duplicate Alert
           </DropdownMenuItem>
-          <DropdownMenuItem className="focus:bg-green-50/30 text-green-700">
+          <DropdownMenuItem className="focus:bg-gray-100 text-gray-700">
             View Market Trends
           </DropdownMenuItem>
-          <DropdownMenuSeparator className="bg-green-100" />
+          <DropdownMenuSeparator className="bg-gray-200" />
           <DropdownMenuItem className="text-red-600 focus:bg-red-50/30">
             Delete Alert
           </DropdownMenuItem>
@@ -321,10 +320,10 @@ function DraggableRow({ row }) {
         transform: CSS.Transform.toString(transform),
         transition,
       }}
-      className={`${isDragging ? "bg-green-50/30" : "hover:bg-green-50/20"} border-b border-green-100 bg-white`}
+      className={`${isDragging ? "bg-gray-100" : "hover:bg-gray-50"} border-b border-gray-200 bg-white`}
     >
       {row.getVisibleCells().map((cell) => (
-        <TableCell key={cell.id} className="py-3">
+        <TableCell key={cell.id} className="py-2">
           {flexRender(cell.column.columnDef.cell, cell.getContext())}
         </TableCell>
       ))}
@@ -440,37 +439,35 @@ export function DataTable({ data = sampleData }) {
   }
 
   return (
-    <div className="mx-4 lg:mx-6">
-      <Toaster
+    <div className="mx-4 lg:mx-6 pt-2">
+      {/* <Toaster
         position="top-center"
         theme="light"
         richColors
         closeButton
-        expand={true}
-        visibleToasts={3}
         toastOptions={{
           classNames: {
-            toast: "border-green-200",
-            title: "text-green-800",
-            description: "text-green-600",
-            success: "bg-green-50",
+            toast: "border-gray-200",
+            title: "text-gray-800",
+            description: "text-gray-600",
+            success: "bg-gray-50",
             error: "bg-red-50 border-red-200",
           },
         }}
-      />
+      /> */}
 
       <Tabs defaultValue="alerts">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-white rounded-t-lg border-b border-green-100">
-          <TabsList className="bg-green-100 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 bg-white rounded-t-lg border-b border-gray-200">
+          <TabsList className="bg-gray-100 w-full sm:w-auto">
             <TabsTrigger
               value="alerts"
-              className="data-[state=active]:bg-green-600 data-[state=active]:text-white w-full sm:w-auto text-sm sm:text-base px-3 py-1.5"
+              className="data-[state=active]:bg-gray-800 data-[state=active]:text-white text-sm px-3 py-1"
             >
               Price Alerts
             </TabsTrigger>
             <TabsTrigger
               value="markets"
-              className="data-[state=active]:bg-green-600 data-[state=active]:text-white w-full sm:w-auto text-sm sm:text-base px-3 py-1.5"
+              className="data-[state=active]:bg-gray-800 data-[state=active]:text-white text-sm px-3 py-1"
             >
               Tracked Markets
             </TabsTrigger>
@@ -481,13 +478,13 @@ export function DataTable({ data = sampleData }) {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
-                  className="border-green-200 text-green-700 hover:bg-green-50/20 w-full sm:w-auto justify-between sm:justify-start"
+                  className="border-gray-300 text-gray-700 hover:bg-gray-50 w-full sm:w-auto"
                 >
-                  <ColumnsIcon className="mr-0 sm:mr-2 size-4 text-green-600" />
-                  <span className="sm:inline">Columns</span>
+                  <ColumnsIcon className="mr-2 size-4" />
+                  <span>Columns</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="border-green-100 bg-white w-[200px]">
+              <DropdownMenuContent className="border-gray-200 bg-white w-[200px]">
                 {table
                   .getAllColumns()
                   .filter((column) => column.getCanHide())
@@ -498,7 +495,7 @@ export function DataTable({ data = sampleData }) {
                       onCheckedChange={(value) =>
                         column.toggleVisibility(!!value)
                       }
-                      className="focus:bg-green-50/30 text-green-700 text-sm"
+                      className="focus:bg-gray-100 text-gray-700 text-sm"
                     >
                       {column.id}
                     </DropdownMenuCheckboxItem>
@@ -508,20 +505,20 @@ export function DataTable({ data = sampleData }) {
 
             <Dialog open={openNewAlert} onOpenChange={setOpenNewAlert}>
               <DialogTrigger asChild>
-                <Button className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto justify-between sm:justify-start">
-                  <PlusIcon className="mr-0 sm:mr-2 size-4" />
-                  <span className="sm:inline">New Alert</span>
+                <Button className="bg-gray-800 hover:bg-gray-900 text-white">
+                  <PlusIcon className="mr-2 size-4" />
+                  New Alert
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-white border-green-200 max-w-md">
+              <DialogContent className="bg-white border-gray-200 max-w-md">
                 <DialogHeader>
-                  <DialogTitle className="text-green-800">
+                  <DialogTitle className="text-gray-800">
                     Create New Price Alert
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label className="text-green-700">Crop Type</Label>
+                    <Label className="text-gray-700">Crop Type</Label>
                     <Input
                       value={newAlert.crop}
                       onChange={(e) =>
@@ -530,7 +527,7 @@ export function DataTable({ data = sampleData }) {
                           crop: e.target.value,
                         }))
                       }
-                      className="border-green-200"
+                      className="border-gray-300"
                       placeholder="e.g. Maize, Rice..."
                     />
                     {formErrors.crop && (
@@ -541,27 +538,21 @@ export function DataTable({ data = sampleData }) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-green-700">Alert Type</Label>
+                    <Label className="text-gray-700">Alert Type</Label>
                     <Select
                       value={newAlert.type}
                       onValueChange={(value) =>
                         setNewAlert((prev) => ({ ...prev, type: value }))
                       }
                     >
-                      <SelectTrigger className="border-green-200 text-green-700">
+                      <SelectTrigger className="border-gray-300 text-gray-700">
                         <SelectValue placeholder="Select alert type" />
                       </SelectTrigger>
-                      <SelectContent className="border-green-200 bg-white">
-                        <SelectItem
-                          value="above"
-                          className="focus:bg-green-50/30"
-                        >
+                      <SelectContent className="border-gray-200 bg-white">
+                        <SelectItem value="above" className="focus:bg-gray-100">
                           Price Above
                         </SelectItem>
-                        <SelectItem
-                          value="below"
-                          className="focus:bg-green-50/30"
-                        >
+                        <SelectItem value="below" className="focus:bg-gray-100">
                           Price Below
                         </SelectItem>
                       </SelectContent>
@@ -838,7 +829,6 @@ export function DataTable({ data = sampleData }) {
 function TableCellViewer({ item }) {
   return (
     <div className="flex items-center gap-2">
-      <WheatIcon className="size-5 text-green-600" />
       <span className="font-medium text-green-800">
         {item.crop || "Unknown Crop"}
       </span>

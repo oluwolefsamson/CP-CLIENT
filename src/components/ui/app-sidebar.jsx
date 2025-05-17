@@ -37,6 +37,7 @@ const data = {
       title: "Overview",
       url: "/dashboard",
       icon: LayoutDashboardIcon,
+      size: "default",
     },
     {
       title: "Nearby Markets",
@@ -90,20 +91,17 @@ const data = {
 
 export function AppSidebar(props) {
   return (
-    <Sidebar
-      collapsible="icon" // Changed from 'offcanvas' to 'icon'
-      {...props}
-      className="flex flex-col h-screen"
-    >
+    <Sidebar collapsible="icon" {...props} className="flex flex-col h-screen">
       {/* Header */}
       <SidebarHeader>
         <SidebarMenu></SidebarMenu>
       </SidebarHeader>
 
-      <div className="flex-1 overflow-y-auto">
+      {/* Modified content area */}
+      <div className="flex-1 flex flex-col overflow-hidden">
         <SidebarContent className="text-gray-800 flex flex-col h-full">
           <NavMain items={data.navMain} />
-          <div className="mt-4">
+          <div className="mt-4 flex-1 overflow-y-auto">
             <NavSecondary items={data.navSecondary} />
           </div>
         </SidebarContent>
