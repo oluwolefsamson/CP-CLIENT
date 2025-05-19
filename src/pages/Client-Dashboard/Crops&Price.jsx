@@ -1,3 +1,4 @@
+// CropsPrice.jsx
 import { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import {
@@ -40,30 +41,14 @@ import {
   DialogTitle,
 } from "../../components/ui/dialog";
 import { Skeleton } from "../../components/ui/skeleton";
-import {
-  Form,
-  FormField,
-  FormControl,
-  FormMessage,
-  FormLabel,
-} from "../../components/ui/form";
-import { useForm } from "react-hook-form";
-import { toast } from "react-hot-toast";
-import {
-  ChevronRight,
-  AlertCircle,
-  TrendingUp,
-  CheckCircle2,
-  Upload,
-  ImageIcon,
-  X,
-} from "lucide-react";
+import { AlertCircle, TrendingUp, CheckCircle2 } from "lucide-react";
 import cornImg from "../../assets/images/crops/corn.jpeg";
 import milletImg from "../../assets/images/crops/millet.jpeg";
 import guineaCornImg from "../../assets/images/crops/guinea-corn.jpeg";
 import riceImg from "../../assets/images/crops/rice.jpeg";
+import SubmitPrice from "./SubmitPrice";
+import bgImage from "../../assets/images/crop-price.jpeg";
 
-// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -79,8 +64,9 @@ const CropsPrice = () => {
   const [selectedCrop, setSelectedCrop] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [previewImage, setPreviewImage] = useState(null);
-  const form = useForm();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [filteredCrops, setFilteredCrops] = useState([]);
 
   const mockCrops = [
     {
@@ -103,7 +89,7 @@ const CropsPrice = () => {
     },
     {
       id: 3,
-      name: "G Corn",
+      name: "Guinea Corn",
       category: "grains",
       priceRange: [45000, 50000],
       unit: "₦/bag",
@@ -122,32 +108,27 @@ const CropsPrice = () => {
   ];
 
   useEffect(() => {
-    setTimeout(() => {
-      setLoading(false);
-    }, 1500);
+    setTimeout(() => setLoading(false), 1500);
   }, []);
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result);
-      };
-      reader.readAsDataURL(file);
+  useEffect(() => {
+    filterCrops();
+  }, [searchQuery, selectedCategory]);
+
+  const filterCrops = () => {
+    let result = mockCrops;
+
+    if (selectedCategory !== "all") {
+      result = result.filter((crop) => crop.category === selectedCategory);
     }
-  };
 
-  const removeImage = () => {
-    setPreviewImage(null);
-    form.setValue("image", null);
-  };
+    if (searchQuery) {
+      result = result.filter((crop) =>
+        crop.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
 
-  const handleFormSubmit = (data) => {
-    toast.success("Price submitted successfully!");
-    console.log("Form data:", data);
-    form.reset();
-    setPreviewImage(null);
+    setFilteredCrops(result);
   };
 
   const PriceTrendDialog = () => {
@@ -239,7 +220,6 @@ const CropsPrice = () => {
                 <SelectContent className="bg-white">
                   <SelectItem value="7d">7 Days</SelectItem>
                   <SelectItem value="30d">30 Days</SelectItem>
-                  <SelectItem value="6m">6 Months</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -282,7 +262,15 @@ const CropsPrice = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div
+      className="w-full px-11 py-8"
+      style={{
+        backgroundImage: `url(${bgImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
       <div className="mb-8 text-center space-y-3">
         <h1 className="text-3xl font-bold text-gray-500">
           Crop Price Intelligence
@@ -294,28 +282,32 @@ const CropsPrice = () => {
 
       <Tabs defaultValue="explore" className="w-full">
         <TabsList className="flex flex-col md:flex-row w-full max-w-md mx-auto mb-8">
-          <TabsTrigger value="explore" className="w-full md:w-auto">
+          <TabsTrigger value="explore">
             <TrendingUp className="h-4 w-4 mr-2" />
             Explore
           </TabsTrigger>
-          <TabsTrigger value="submit" className="w-full md:w-auto">
+          {/* <TabsTrigger value="submit">
             <CheckCircle2 className="h-4 w-4 mr-2" />
             Submit
-          </TabsTrigger>
-          <TabsTrigger value="alerts" className="w-full md:w-auto">
+          </TabsTrigger> */}
+          {/* <TabsTrigger value="alerts">
             <AlertCircle className="h-4 w-4 mr-2" />
             Alerts
-          </TabsTrigger>
+          </TabsTrigger> */}
         </TabsList>
 
-        {/* Explore Tab */}
         <TabsContent value="explore">
           <div className="mb-8 flex flex-col md:flex-row gap-4">
             <Input
               placeholder="Search crops..."
               className="w-full md:max-w-md"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <Select>
+            <Select
+              value={selectedCategory}
+              onValueChange={setSelectedCategory}
+            >
               <SelectTrigger className="w-full md:w-[180px]">
                 <SelectValue placeholder="Filter category" />
               </SelectTrigger>
@@ -329,228 +321,121 @@ const CropsPrice = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {loading
-              ? Array(4)
-                  .fill(0)
-                  .map((_, i) => (
-                    <Card key={i} className="animate-pulse h-[400px]">
-                      <Skeleton className="h-full w-full" />
-                    </Card>
-                  ))
-              : mockCrops.map((crop) => (
-                  <Card
-                    key={crop.id}
-                    className="group hover:shadow-2xl transition-all duration-300 ease-in-out h-[400px] relative overflow-hidden rounded-2xl cursor-pointer border border-green-200"
-                    onClick={() => setSelectedImage(crop.image)}
-                  >
-                    {/* Image Layer */}
-                    <div className="absolute inset-0 z-0">
-                      <img
-                        src={crop.image}
-                        alt={crop.name}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
-                    </div>
-
-                    {/* Content Overlay */}
-                    <div className="relative z-10 h-full flex flex-col justify-end p-6">
-                      <CardHeader className="p-0">
-                        <CardTitle className="flex justify-between items-start">
-                          <span className="text-lg font-semibold text-white drop-shadow-md">
-                            {crop.name}
-                          </span>
-                          <span className="text-sm font-medium bg-white/20 text-white px-3 py-1 rounded-full backdrop-blur-md shadow-md">
-                            {crop.markets} markets
-                          </span>
-                        </CardTitle>
-                      </CardHeader>
-
-                      <CardContent className="text-white p-0 space-y-2 mt-4">
-                        <div className="text-xl font-extrabold text-green-200 drop-shadow-sm">
-                          ₦{crop.priceRange[0].toLocaleString()} - ₦
-                          {crop.priceRange[1].toLocaleString()}
-                          <span className="text-sm text-green-100 ml-2">
-                            /{crop.unit}
-                          </span>
-                        </div>
-                        <div className="flex items-center text-sm text-green-100">
-                          <AlertCircle className="h-4 w-4 mr-2 text-yellow-300" />
-                          Updated 2h ago
-                        </div>
-                      </CardContent>
-
-                      <CardFooter className="p-0 mt-6">
-                        <div className="flex items-center w-full gap-3">
-                          {/* View Trends Button */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedCrop(crop);
-                            }}
-                            className="w-3/4 flex items-center justify-center gap-2 py-4 px-4 bg-white text-gray-900 font-semibold rounded-full shadow-lg transition-transform hover:scale-105 hover:shadow-xl"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-7 w-7 text-green-600"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m-18 8h18a2 2 0 002-2V6a2 2 0 00-2-2H3a2 2 0 00-2 2v8a2 2 0 002 2z"
-                              />
-                            </svg>
-                            View Trends
-                          </button>
-
-                          {/* Bookmark Button */}
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              console.log("Bookmarked:", crop.name);
-                            }}
-                            className="w-1/4 aspect-square flex items-center justify-center rounded-3xl bg-gray-500 text-white hover:bg-gray-700 shadow-lg hover:shadow-xl transition-all"
-                            aria-label="Bookmark"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-5 w-5"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M5 5v14l7-7 7 7V5a2 2 0 00-2-2H7a2 2 0 00-2 2z"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      </CardFooter>
-                    </div>
+            {loading ? (
+              Array(4)
+                .fill(0)
+                .map((_, i) => (
+                  <Card key={i} className="animate-pulse h-[400px]">
+                    <Skeleton className="h-full w-full" />
                   </Card>
-                ))}
+                ))
+            ) : filteredCrops.length > 0 ? (
+              filteredCrops.map((crop) => (
+                <Card
+                  key={crop.id}
+                  className="group hover:shadow-2xl transition-all duration-300 ease-in-out h-[400px] relative overflow-hidden rounded-2xl cursor-pointer border border-green-200"
+                  onClick={() => setSelectedImage(crop.image)}
+                >
+                  <div className="absolute inset-0 z-0">
+                    <img
+                      src={crop.image}
+                      alt={crop.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+                  </div>
+
+                  <div className="relative z-10 h-full flex flex-col justify-end p-6">
+                    <CardHeader className="p-0">
+                      <CardTitle className="flex justify-between items-start">
+                        <span className="text-lg font-semibold text-white drop-shadow-md">
+                          {crop.name}
+                        </span>
+                        <span className="text-sm font-medium bg-white/20 text-white px-3 py-1 rounded-full backdrop-blur-md shadow-md">
+                          {crop.markets} markets
+                        </span>
+                      </CardTitle>
+                    </CardHeader>
+
+                    <CardContent className="text-white p-0 space-y-2 mt-4">
+                      <div className="text-xl font-extrabold text-green-200 drop-shadow-sm">
+                        ₦{crop.priceRange[0].toLocaleString()} - ₦
+                        {crop.priceRange[1].toLocaleString()}
+                        <span className="text-sm text-green-100 ml-2">
+                          /{crop.unit}
+                        </span>
+                      </div>
+                      <div className="flex items-center text-sm text-green-100">
+                        <AlertCircle className="h-4 w-4 mr-2 text-yellow-300" />
+                        Updated 2h ago
+                      </div>
+                    </CardContent>
+
+                    <CardFooter className="p-0 mt-6">
+                      <div className="flex items-center w-full gap-3">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedCrop(crop);
+                          }}
+                          className="w-3/4 flex items-center justify-center gap-2 py-4 px-4 bg-white text-gray-900 font-semibold rounded-full shadow-lg transition-transform hover:scale-105 hover:shadow-xl"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-7 w-7 text-green-600"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m-18 8h18a2 2 0 002-2V6a2 2 0 00-2-2H3a2 2 0 00-2 2v8a2 2 0 002 2z"
+                            />
+                          </svg>
+                          View Trends
+                        </button>
+
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            console.log("Bookmarked:", crop.name);
+                          }}
+                          className="w-[70px] h-[60px] aspect-square flex items-center justify-center rounded-3xl bg-gray-500 text-white hover:bg-gray-700 shadow-lg hover:shadow-xl transition-all"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5 "
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 5v14l7-7 7 7V5a2 2 0 00-2-2H7a2 2 0 00-2 2z"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </CardFooter>
+                  </div>
+                </Card>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 text-gray-500">
+                No crops found matching your criteria
+              </div>
+            )}
           </div>
         </TabsContent>
 
-        {/* Submit Tab */}
         <TabsContent value="submit">
-          <Card className="max-w-2xl mx-auto">
-            <CardHeader>
-              <CardTitle className="text-2xl text-gray-700">
-                New Price Submission
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(handleFormSubmit)}
-                  className="space-y-6"
-                >
-                  <FormField
-                    control={form.control}
-                    name="crop"
-                    render={({ field }) => (
-                      <div className="space-y-2">
-                        <FormLabel>Crop Type</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a crop" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {mockCrops.map((crop) => (
-                              <SelectItem
-                                key={crop.id}
-                                value={crop.id.toString()}
-                              >
-                                {crop.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </div>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="price"
-                    render={({ field }) => (
-                      <div className="space-y-2">
-                        <FormLabel>Price (₦)</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="number"
-                            placeholder="Enter price per unit"
-                            className="text-lg font-medium"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </div>
-                    )}
-                  />
-
-                  <div className="space-y-2">
-                    <FormLabel>Market Evidence</FormLabel>
-                    <div className="flex flex-col gap-4">
-                      {previewImage ? (
-                        <div className="relative group">
-                          <img
-                            src={previewImage}
-                            alt="Preview"
-                            className="w-full h-48 object-cover rounded-lg border"
-                          />
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="absolute top-2 right-2 bg-white/90 hover:bg-white"
-                            onClick={removeImage}
-                          >
-                            <X className="h-4 w-4 text-red-600" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <label className="flex flex-col items-center justify-center h-48 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 transition-colors cursor-pointer">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            capture="environment"
-                            className="hidden"
-                            onChange={handleImageUpload}
-                          />
-                          <div className="flex flex-col items-center text-gray-500">
-                            <Upload className="h-8 w-8 mb-2" />
-                            <p className="text-sm">Upload market photo</p>
-                            <p className="text-xs text-muted-foreground">
-                              JPEG or PNG, max 5MB
-                            </p>
-                          </div>
-                        </label>
-                      )}
-                    </div>
-                  </div>
-
-                  <Button className="w-full h-12 text-lg" type="submit">
-                    Submit Price Report
-                  </Button>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
+          <SubmitPrice crops={mockCrops} />
         </TabsContent>
 
-        {/* Alerts Tab */}
         <TabsContent value="alerts">
           <Card className="max-w-2xl mx-auto">
             <CardHeader>
@@ -621,6 +506,7 @@ const CropsPrice = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
       <PriceTrendDialog />
       <Dialog
         open={!!selectedImage}
@@ -630,7 +516,6 @@ const CropsPrice = () => {
           <button
             onClick={() => setSelectedImage(null)}
             className="absolute top-3 right-3 bg-gray-200 hover:bg-gray-300 text-gray-600 hover:text-black transition p-1 rounded-full shadow-sm"
-            aria-label="Close modal"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
