@@ -1,4 +1,16 @@
 import { useState, useEffect } from "react";
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from "chart.js";
 import { Button } from "../../components/ui/button";
 import {
   Card,
@@ -50,6 +62,18 @@ import cornImg from "../../assets/images/crops/corn.jpeg";
 import milletImg from "../../assets/images/crops/millet.jpeg";
 import guineaCornImg from "../../assets/images/crops/guinea-corn.jpeg";
 import riceImg from "../../assets/images/crops/rice.jpeg";
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 const CropsPrice = () => {
   const [selectedCrop, setSelectedCrop] = useState(null);
@@ -126,6 +150,137 @@ const CropsPrice = () => {
     setPreviewImage(null);
   };
 
+  const PriceTrendDialog = () => {
+    const getData = (period = "7d") => {
+      const dataMap = {
+        "7d": {
+          labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Today"],
+          prices: [15800, 16200, 16500, 16300, 16800, 17200, 17500],
+        },
+        "30d": {
+          labels: Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`),
+          prices: Array.from({ length: 30 }, () =>
+            Math.floor(Math.random() * 4000 + 15000)
+          ),
+        },
+      };
+
+      return dataMap[period] || dataMap["7d"];
+    };
+
+    const [timePeriod, setTimePeriod] = useState("7d");
+    const { labels, prices } = getData(timePeriod);
+
+    const chartData = {
+      labels,
+      datasets: [
+        {
+          label: "Price (₦)",
+          data: prices,
+          borderColor: "#16a34a",
+          backgroundColor: "rgba(22, 163, 74, 0.1)",
+          tension: 0.4,
+          fill: true,
+          pointRadius: 4,
+          pointBackgroundColor: "#16a34a",
+          pointBorderColor: "#fff",
+          pointHoverRadius: 6,
+        },
+      ],
+    };
+
+    const options = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          mode: "index",
+          intersect: false,
+          backgroundColor: "#fff",
+          titleColor: "#1f2937",
+          bodyColor: "#1f2937",
+          borderColor: "#e5e7eb",
+          borderWidth: 1,
+          padding: 12,
+          callbacks: {
+            label: (context) => `₦${context.parsed.y.toLocaleString()}`,
+          },
+        },
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: "#6b7280" },
+        },
+        y: {
+          beginAtZero: false,
+          grid: { color: "#f3f4f6" },
+          ticks: {
+            color: "#6b7280",
+            callback: (value) => `₦${Number(value).toLocaleString()}`,
+          },
+        },
+      },
+    };
+
+    return (
+      <Dialog open={!!selectedCrop} onOpenChange={() => setSelectedCrop(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <div className="flex justify-between items-center">
+              <DialogTitle className="text-2xl">
+                {selectedCrop?.name} Market Trends
+              </DialogTitle>
+              <Select value={timePeriod} onValueChange={setTimePeriod}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="Time period" />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="7d">7 Days</SelectItem>
+                  <SelectItem value="30d">30 Days</SelectItem>
+                  <SelectItem value="6m">6 Months</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            <div className="h-64">
+              <Line data={chartData} options={options} />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <div className="p-4 bg-green-50 rounded-lg">
+                <p className="text-sm text-muted-foreground">Current Price</p>
+                <p className="text-xl font-semibold">
+                  ₦{prices[prices.length - 1]?.toLocaleString()}
+                </p>
+              </div>
+              <div className="p-4 bg-green-50 rounded-lg">
+                <p className="text-sm text-muted-foreground">7D Change</p>
+                <p className="text-xl font-semibold text-green-600">+4.2% ↗</p>
+              </div>
+              <div className="p-4 bg-green-50 rounded-lg">
+                <p className="text-sm text-muted-foreground">30D High</p>
+                <p className="text-xl font-semibold">₦18,200</p>
+              </div>
+              <div className="p-4 bg-green-50 rounded-lg">
+                <p className="text-sm text-muted-foreground">30D Low</p>
+                <p className="text-xl font-semibold">₦15,800</p>
+              </div>
+            </div>
+
+            <div className="text-sm text-muted-foreground">
+              <TrendingUp className="h-4 w-4 mr-2 inline-block" />
+              Prices trending above 3-month average in 12 markets
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8 text-center space-y-3">
@@ -185,32 +340,34 @@ const CropsPrice = () => {
               : mockCrops.map((crop) => (
                   <Card
                     key={crop.id}
-                    className="group hover:shadow-lg transition-all duration-300 h-[400px] relative overflow-hidden cursor-pointer"
+                    className="group hover:shadow-2xl transition-all duration-300 ease-in-out h-[400px] relative overflow-hidden rounded-2xl cursor-pointer border border-green-200"
                     onClick={() => setSelectedImage(crop.image)}
                   >
+                    {/* Image Layer */}
                     <div className="absolute inset-0 z-0">
                       <img
                         src={crop.image}
                         alt={crop.name}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
                     </div>
 
                     {/* Content Overlay */}
-                    <div className="relative z-10 h-full flex flex-col justify-end bg-gradient-to-t from-black/60 via-black/40 to-transparent p-6">
+                    <div className="relative z-10 h-full flex flex-col justify-end p-6">
                       <CardHeader className="p-0">
                         <CardTitle className="flex justify-between items-start">
-                          <span className="text-lg font-semibold text-white">
+                          <span className="text-lg font-semibold text-white drop-shadow-md">
                             {crop.name}
                           </span>
-                          <span className="text-sm font-medium bg-white/20 text-white px-3 py-1 rounded-full backdrop-blur-sm">
+                          <span className="text-sm font-medium bg-white/20 text-white px-3 py-1 rounded-full backdrop-blur-md shadow-md">
                             {crop.markets} markets
                           </span>
                         </CardTitle>
                       </CardHeader>
 
                       <CardContent className="text-white p-0 space-y-2 mt-4">
-                        <div className="text-xl font-bold text-green-200">
+                        <div className="text-xl font-extrabold text-green-200 drop-shadow-sm">
                           ₦{crop.priceRange[0].toLocaleString()} - ₦
                           {crop.priceRange[1].toLocaleString()}
                           <span className="text-sm text-green-100 ml-2">
@@ -224,17 +381,57 @@ const CropsPrice = () => {
                       </CardContent>
 
                       <CardFooter className="p-0 mt-6">
-                        <Button
-                          className="w-full bg-white/20 hover:bg-white/30 text-white backdrop-blur-sm"
-                          variant="outline"
-                          onClick={(e) => {
-                            e.stopPropagation();
+                        <div className="flex items-center w-full gap-3">
+                          {/* View Trends Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedCrop(crop);
+                            }}
+                            className="w-3/4 flex items-center justify-center gap-2 py-4 px-4 bg-white text-gray-900 font-semibold rounded-full shadow-lg transition-transform hover:scale-105 hover:shadow-xl"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-7 w-7 text-green-600"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m-18 8h18a2 2 0 002-2V6a2 2 0 00-2-2H3a2 2 0 00-2 2v8a2 2 0 002 2z"
+                              />
+                            </svg>
+                            View Trends
+                          </button>
 
-                            setSelectedCrop(crop);
-                          }}
-                        >
-                          View Trends <ChevronRight className="h-4 w-4 ml-2" />
-                        </Button>
+                          {/* Bookmark Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              console.log("Bookmarked:", crop.name);
+                            }}
+                            className="w-1/4 aspect-square flex items-center justify-center rounded-3xl bg-gray-500 text-white hover:bg-gray-700 shadow-lg hover:shadow-xl transition-all"
+                            aria-label="Bookmark"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 5v14l7-7 7 7V5a2 2 0 00-2-2H7a2 2 0 00-2 2z"
+                              />
+                            </svg>
+                          </button>
+                        </div>
                       </CardFooter>
                     </div>
                   </Card>
@@ -424,46 +621,41 @@ const CropsPrice = () => {
           </Card>
         </TabsContent>
       </Tabs>
-
+      <PriceTrendDialog />
       <Dialog
         open={!!selectedImage}
         onOpenChange={() => setSelectedImage(null)}
       >
-        <DialogContent className="max-w-[95vw] max-h-[95vh] sm:max-w-[90vw] sm:max-h-[90vh] p-2">
+        <DialogContent className="w-[90vw] max-w-[500px] sm:max-w-[600px] md:max-w-[700px] lg:max-w-[500px] p-2 bg-white rounded-xl shadow-2xl">
+          <button
+            onClick={() => setSelectedImage(null)}
+            className="absolute top-3 right-3 bg-gray-200 hover:bg-gray-300 text-gray-600 hover:text-black transition p-1 rounded-full shadow-sm"
+            aria-label="Close modal"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+
           <div className="flex items-center justify-center h-full">
             {selectedImage && (
               <img
                 src={selectedImage}
                 alt="Enlarged crop preview"
-                className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-md"
               />
             )}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Price Trend Dialog */}
-      <Dialog open={!!selectedCrop} onOpenChange={() => setSelectedCrop(null)}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">
-              {selectedCrop?.name} Price Trend
-            </DialogTitle>
-          </DialogHeader>
-          <div className="h-64 bg-green-50 rounded-lg p-4">
-            <div className="flex items-end justify-between h-full gap-2">
-              {[16000, 16500, 17000, 16800, 17500].map((value, index) => (
-                <div
-                  key={index}
-                  className="flex-1 bg-green-600 rounded-t animate-in fade-in"
-                  style={{ height: `${(value / 20000) * 70}%` }}
-                />
-              ))}
-            </div>
-          </div>
-          <div className="flex justify-between text-sm text-muted-foreground mt-4">
-            <span>Last 7 days</span>
-            <span>Average: ₦16,800/bag</span>
           </div>
         </DialogContent>
       </Dialog>
