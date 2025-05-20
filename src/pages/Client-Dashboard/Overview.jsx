@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { ChartAreaInteractive } from "../../components/ui/chart-area-interactive";
-import { DataTable } from "../../components/ui/data-table";
+
 import { SectionCards } from "../../components/ui/section-cards";
 import { Skeleton } from "../../components/ui/skeleton";
-import data from "../../assets/data/dashboard-data.json";
+
+import { CombinedOverviewTable } from "../../components/ui/CombinedOverviewTable";
 
 export function Overview() {
   const [isLoading, setIsLoading] = useState(true);
@@ -27,6 +28,14 @@ export function Overview() {
         <SectionCards />
       )}
 
+      <div className="px-4 lg:px-6">
+        {isLoading ? (
+          <Skeleton className="h-[300px] rounded-lg" />
+        ) : (
+          <CombinedOverviewTable />
+        )}
+      </div>
+
       {/* Chart Skeleton */}
       <div className="px-4 lg:px-6">
         {isLoading ? (
@@ -35,19 +44,6 @@ export function Overview() {
           <ChartAreaInteractive />
         )}
       </div>
-
-      {isLoading ? (
-        <div className="space-y-4 px-4 lg:px-6">
-          <Skeleton className="h-10 w-full rounded-lg" />
-          <div className="space-y-2">
-            {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full rounded-lg" />
-            ))}
-          </div>
-        </div>
-      ) : (
-        <DataTable />
-      )}
     </div>
   );
 }

@@ -80,8 +80,12 @@ import {
   TabsList,
   TabsTrigger,
 } from "../../components/ui/tabs";
+import clsx from "clsx";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { Edit as EditIcon } from "lucide-react";
+import { Copy as CopyIcon, Activity as ActivityIcon } from "lucide-react";
+import { TrashIcon } from "lucide-react";
 
-// Schema validation
 export const schema = z.object({
   id: z.number().positive().optional(),
   crop: z.string().min(1, "Crop type is required"),
@@ -167,12 +171,6 @@ function DragHandle({ id }) {
 
 const columns = [
   {
-    id: "drag",
-    header: () => null,
-    cell: ({ row }) => <DragHandle id={row.original.id} />,
-    size: 40,
-  },
-  {
     id: "select",
     header: ({ table }) => (
       <div className="flex items-center justify-center">
@@ -180,7 +178,7 @@ const columns = [
           checked={table.getIsAllPageRowsSelected()}
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
-          className="border-gray-300 data-[state=checked]:bg-gray-800 data-[state=checked]:border-gray-900"
+          className="border-green-300 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-700"
         />
       </div>
     ),
@@ -190,7 +188,7 @@ const columns = [
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
           aria-label="Select row"
-          className="border-gray-300 data-[state=checked]:bg-gray-800 data-[state=checked]:border-gray-900"
+          className="border-blue-300 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-700"
         />
       </div>
     ),
@@ -201,7 +199,21 @@ const columns = [
   {
     accessorKey: "crop",
     header: "Crop",
-    cell: ({ row }) => <TableCellViewer item={row.original} />,
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <span className="font-semibold text-green-800">
+          {row.original.crop}
+        </span>
+        {row.original.market && (
+          <Badge
+            variant="outline"
+            className="border-blue-200 text-blue-600 bg-blue-50"
+          >
+            {row.original.market}
+          </Badge>
+        )}
+      </div>
+    ),
     size: 200,
     enableHiding: false,
   },
@@ -209,8 +221,15 @@ const columns = [
     accessorKey: "type",
     header: "Alert Type",
     cell: ({ row }) => (
-      <Badge className="bg-gray-100 text-gray-700 capitalize">
-        {row.original.type || "N/A"}
+      <Badge
+        className={clsx(
+          "capitalize font-medium",
+          row.original.type === "above"
+            ? "bg-green-100 text-green-700"
+            : "bg-purple-100 text-purple-700"
+        )}
+      >
+        {row.original.type}
       </Badge>
     ),
     size: 120,
@@ -220,53 +239,52 @@ const columns = [
     header: "Status",
     cell: ({ row }) => (
       <Badge
-        className={`gap-1 ${
+        className={clsx(
+          "gap-2 items-center",
           row.original.status === "active"
-            ? "bg-green-100 text-green-700"
-            : "bg-gray-100 text-gray-700"
-        }`}
+            ? "bg-emerald-100 text-emerald-700"
+            : row.original.status === "pending"
+              ? "bg-amber-100 text-amber-700"
+              : "bg-gray-100 text-gray-700"
+        )}
       >
         {row.original.status === "active" ? (
-          <CheckCircle2Icon className="size-3.5 text-green-600" />
+          <CheckCircle2Icon className="size-4" />
         ) : (
-          <LoaderIcon className="size-3.5 text-gray-600 animate-spin" />
+          <LoaderIcon className="size-4 animate-spin" />
         )}
-        {row.original.status || "N/A"}
+        <span className="capitalize">{row.original.status}</span>
       </Badge>
     ),
-    size: 120,
+    size: 140,
   },
   {
     accessorKey: "threshold",
     header: "Price Threshold",
-    cell: ({ row }) => {
-      const threshold = Number(row.original.threshold) || 0;
-      return (
-        <span className="font-semibold text-gray-800">
-          ₦{threshold.toLocaleString()}/100kg
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <span className="font-bold text-green-600">
+          ₦{Number(row.original.threshold).toLocaleString()}
         </span>
-      );
-    },
+        <span className="text-sm text-gray-500">/100kg</span>
+      </div>
+    ),
     size: 180,
-  },
-  {
-    accessorKey: "market",
-    header: "Market",
-    cell: ({ row }) => row.original.market || "All Markets",
-    size: 220,
   },
   {
     accessorKey: "lastTriggered",
     header: "Last Triggered",
-    cell: ({ row }) =>
-      row.original.lastTriggered ? (
-        <span className="text-gray-600">
-          {new Date(row.original.lastTriggered).toLocaleDateString()}
-        </span>
-      ) : (
-        <span className="text-gray-400">Never</span>
-      ),
-    size: 150,
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2 text-gray-600">
+        <CalendarIcon className="size-4 text-gray-400" />
+        {row.original.lastTriggered ? (
+          new Date(row.original.lastTriggered).toLocaleDateString()
+        ) : (
+          <span className="text-gray-400">Never</span>
+        )}
+      </div>
+    ),
+    size: 160,
   },
   {
     id: "actions",
@@ -276,25 +294,32 @@ const columns = [
           <Button
             variant="ghost"
             size="icon"
-            className="text-gray-600 hover:bg-gray-100"
+            className="text-gray-500 hover:bg-blue-50 hover:text-green-600"
           >
             <MoreVerticalIcon className="size-4" />
             <span className="sr-only">Open menu</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="border-gray-200 bg-white">
-          <DropdownMenuItem className="focus:bg-gray-100 text-gray-700">
+        <DropdownMenuContent
+          align="end"
+          className="border-gray-200 bg-white w-48"
+        >
+          <DropdownMenuItem className="flex items-center gap-2 text-gray-700 hover:bg-blue-50">
+            <EditIcon className="size-4" />
             Edit Alert
           </DropdownMenuItem>
-          <DropdownMenuItem className="focus:bg-gray-100 text-gray-700">
-            Duplicate Alert
+          <DropdownMenuItem className="flex items-center gap-2 text-gray-700 hover:bg-blue-50">
+            <CopyIcon className="size-4" />
+            Duplicate
           </DropdownMenuItem>
-          <DropdownMenuItem className="focus:bg-gray-100 text-gray-700">
-            View Market Trends
+          <DropdownMenuItem className="flex items-center gap-2 text-gray-700 hover:bg-blue-50">
+            <ActivityIcon className="size-4" />
+            View Trends
           </DropdownMenuItem>
           <DropdownMenuSeparator className="bg-gray-200" />
-          <DropdownMenuItem className="text-red-600 focus:bg-red-50/30">
-            Delete Alert
+          <DropdownMenuItem className="flex items-center gap-2 text-red-600 hover:bg-red-50">
+            <TrashIcon className="size-4" />
+            Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -439,35 +464,19 @@ export function DataTable({ data = sampleData }) {
   }
 
   return (
-    <div className="mx-4 lg:mx-6 pt-2">
-      {/* <Toaster
-        position="top-center"
-        theme="light"
-        richColors
-        closeButton
-        toastOptions={{
-          classNames: {
-            toast: "border-gray-200",
-            title: "text-gray-800",
-            description: "text-gray-600",
-            success: "bg-gray-50",
-            error: "bg-red-50 border-red-200",
-          },
-        }}
-      /> */}
-
+    <div className="mx-4 lg:mx-6 pt-4">
       <Tabs defaultValue="alerts">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 bg-white rounded-t-lg border-b border-gray-200">
-          <TabsList className="bg-gray-100 w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+          <TabsList className="bg-gray-50 border border-gray-200">
             <TabsTrigger
               value="alerts"
-              className="data-[state=active]:bg-gray-800 data-[state=active]:text-white text-sm px-3 py-1"
+              className="data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:border-green-700 px-4 py-2"
             >
               Price Alerts
             </TabsTrigger>
             <TabsTrigger
               value="markets"
-              className="data-[state=active]:bg-gray-800 data-[state=active]:text-white text-sm px-3 py-1"
+              className="data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:border-green-700 px-4 py-2"
             >
               Tracked Markets
             </TabsTrigger>
@@ -826,23 +835,23 @@ export function DataTable({ data = sampleData }) {
   );
 }
 
-function TableCellViewer({ item }) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className="font-medium text-green-800">
-        {item.crop || "Unknown Crop"}
-      </span>
-      {item.market && (
-        <Badge
-          variant="outline"
-          className="ml-2 border-green-200 text-green-700 bg-green-50/30"
-        >
-          {item.market}
-        </Badge>
-      )}
-    </div>
-  );
-}
+// function TableCellViewer({ item }) {
+//   return (
+//     <div className="flex items-center gap-2">
+//       <span className="font-medium text-green-800">
+//         {item.crop || "Unknown Crop"}
+//       </span>
+//       {item.market && (
+//         <Badge
+//           variant="outline"
+//           className="ml-2 border-green-200 text-green-700 bg-green-50/30"
+//         >
+//           {item.market}
+//         </Badge>
+//       )}
+//     </div>
+//   );
+// }
 
 export class ErrorBoundary extends React.Component {
   constructor(props) {
