@@ -7,7 +7,7 @@ export function SiteHeader({ user }) {
   )}&background=0D8ABC&color=fff&rounded=true&size=64`;
 
   return (
-    <header className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex h-12 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear">
+    <header className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex h-[100px] shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear">
       <div className="flex w-full items-center justify-between px-4 lg:px-6">
         <div className="flex items-center gap-3">
           <SidebarTrigger className="-ml-1" />
@@ -15,7 +15,7 @@ export function SiteHeader({ user }) {
             orientation="vertical"
             className="mx-2 data-[orientation=vertical]:h-6"
           />
-          <h1 className=" font-bold text-2xl text-green-600 select-none transition-colors duration-300 ease-in-out">
+          <h1 className=" font-bold text-2xl  text-green-600 select-none transition-colors duration-300 ease-in-out">
             Welcome, <span className="capitalize">{user?.name || "Guest"}</span>
           </h1>
         </div>
