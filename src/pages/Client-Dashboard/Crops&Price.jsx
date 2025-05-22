@@ -34,20 +34,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "../../components/ui/dialog";
 import { Skeleton } from "../../components/ui/skeleton";
-import { AlertCircle, TrendingUp, CheckCircle2 } from "lucide-react";
+import { AlertCircle, TrendingUp, X } from "lucide-react";
 import cornImg from "../../assets/images/crops/corn.jpeg";
 import milletImg from "../../assets/images/crops/millet.jpeg";
 import guineaCornImg from "../../assets/images/crops/guinea-corn.jpeg";
 import riceImg from "../../assets/images/crops/rice.jpeg";
 import SubmitPrice from "./SubmitPrice";
-import bgImage from "../../assets/images/crop-price.jpeg";
 
 ChartJS.register(
   CategoryScale,
@@ -131,7 +124,7 @@ const CropsPrice = () => {
     setFilteredCrops(result);
   };
 
-  const PriceTrendDialog = () => {
+  const PriceTrendDrawer = () => {
     const getData = (period = "7d") => {
       const dataMap = {
         "7d": {
@@ -206,96 +199,104 @@ const CropsPrice = () => {
     };
 
     return (
-      <Dialog open={!!selectedCrop} onOpenChange={() => setSelectedCrop(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <div className="flex justify-between items-center">
-              <DialogTitle className="text-2xl">
-                {selectedCrop?.name} Market Trends
-              </DialogTitle>
-              <Select value={timePeriod} onValueChange={setTimePeriod}>
-                <SelectTrigger className="w-[120px]">
-                  <SelectValue placeholder="Time period" />
-                </SelectTrigger>
-                <SelectContent className="bg-white">
-                  <SelectItem value="7d">7 Days</SelectItem>
-                  <SelectItem value="30d">30 Days</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </DialogHeader>
+      <div
+        className={`fixed inset-0 z-50 transition-all duration-300 ${
+          selectedCrop ? "visible" : "invisible"
+        }`}
+      >
+        {/* Backdrop */}
+        <div
+          className="fixed inset-0 bg-black/50 transition-opacity"
+          onClick={() => setSelectedCrop(null)}
+        />
 
-          <div className="space-y-6">
-            <div className="h-64">
-              <Line data={chartData} options={options} />
+        {/* Drawer Content */}
+        <div
+          className={`fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-xl transition-transform duration-300 ${
+            selectedCrop ? "translate-y-0" : "translate-y-full"
+          }`}
+          style={{ height: "85vh" }}
+        >
+          {/* Drag Handle */}
+          <div className="absolute left-1/2 top-2 -translate-x-1/2">
+            <div className="h-1.5 w-12 rounded-full bg-gray-300" />
+          </div>
+
+          {/* Close Button */}
+          <button
+            onClick={() => setSelectedCrop(null)}
+            className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100"
+          >
+            <X className="h-5 w-5 text-gray-600" />
+          </button>
+
+          {/* Content Container */}
+          <div className="h-full flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="px-6 pt-6 pb-4 border-b">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">
+                  {selectedCrop?.name} Market Trends
+                </h2>
+                <Select value={timePeriod} onValueChange={setTimePeriod}>
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue placeholder="Time period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7d">7 Days</SelectItem>
+                    <SelectItem value="30d">30 Days</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <div className="p-4 bg-green-50 rounded-lg">
-                <p className="text-sm text-muted-foreground">Current Price</p>
-                <p className="text-xl font-semibold">
-                  ₦{prices[prices.length - 1]?.toLocaleString()}
-                </p>
-              </div>
-              <div className="p-4 bg-green-50 rounded-lg">
-                <p className="text-sm text-muted-foreground">7D Change</p>
-                <p className="text-xl font-semibold text-green-600">+4.2% ↗</p>
-              </div>
-              <div className="p-4 bg-green-50 rounded-lg">
-                <p className="text-sm text-muted-foreground">30D High</p>
-                <p className="text-xl font-semibold">₦18,200</p>
-              </div>
-              <div className="p-4 bg-green-50 rounded-lg">
-                <p className="text-sm text-muted-foreground">30D Low</p>
-                <p className="text-xl font-semibold">₦15,800</p>
-              </div>
-            </div>
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="space-y-6">
+                <div className="h-[300px]">
+                  <Line data={chartData} options={options} />
+                </div>
 
-            <div className="text-sm text-muted-foreground">
-              <TrendingUp className="h-4 w-4 mr-2 inline-block" />
-              Prices trending above 3-month average in 12 markets
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  <div className="p-4 bg-green-50 rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      Current Price
+                    </p>
+                    <p className="text-xl font-semibold">
+                      ₦{prices[prices.length - 1]?.toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="p-4 bg-green-50 rounded-lg">
+                    <p className="text-sm text-muted-foreground">7D Change</p>
+                    <p className="text-xl font-semibold text-green-600">
+                      +4.2% ↗
+                    </p>
+                  </div>
+                  <div className="p-4 bg-green-50 rounded-lg">
+                    <p className="text-sm text-muted-foreground">30D High</p>
+                    <p className="text-xl font-semibold">₦18,200</p>
+                  </div>
+                  <div className="p-4 bg-green-50 rounded-lg">
+                    <p className="text-sm text-muted-foreground">30D Low</p>
+                    <p className="text-xl font-semibold">₦15,800</p>
+                  </div>
+                </div>
+
+                <div className="text-sm text-muted-foreground">
+                  <TrendingUp className="h-4 w-4 mr-2 inline-block" />
+                  Prices trending above 3-month average in 12 markets
+                </div>
+              </div>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </div>
     );
   };
 
   return (
-    <div
-      className="w-full px-11 py-8"
-      style={{
-        backgroundImage: `url(${bgImage})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      <div className="mb-8 text-center space-y-3">
-        <h1 className="text-3xl font-bold text-gray-500">
-          Crop Price Intelligence
-        </h1>
-        <p className="text-muted-foreground">
-          Real-time agricultural market insights
-        </p>
-      </div>
-
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
       <Tabs defaultValue="explore" className="w-full">
-        <TabsList className="flex flex-col md:flex-row w-full max-w-md mx-auto mb-8">
-          <TabsTrigger value="explore">
-            <TrendingUp className="h-4 w-4 mr-2" />
-            Explore
-          </TabsTrigger>
-          {/* <TabsTrigger value="submit">
-            <CheckCircle2 className="h-4 w-4 mr-2" />
-            Submit
-          </TabsTrigger> */}
-          {/* <TabsTrigger value="alerts">
-            <AlertCircle className="h-4 w-4 mr-2" />
-            Alerts
-          </TabsTrigger> */}
-        </TabsList>
-
         <TabsContent value="explore">
           <div className="mb-8 flex flex-col md:flex-row gap-4">
             <Input
@@ -406,7 +407,7 @@ const CropsPrice = () => {
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5 "
+                            className="h-5 w-5"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -507,43 +508,7 @@ const CropsPrice = () => {
         </TabsContent>
       </Tabs>
 
-      <PriceTrendDialog />
-      <Dialog
-        open={!!selectedImage}
-        onOpenChange={() => setSelectedImage(null)}
-      >
-        <DialogContent className="w-[90vw] max-w-[500px] sm:max-w-[600px] md:max-w-[700px] lg:max-w-[500px] p-2 bg-white rounded-xl shadow-2xl">
-          <button
-            onClick={() => setSelectedImage(null)}
-            className="absolute top-3 right-3 bg-gray-200 hover:bg-gray-300 text-gray-600 hover:text-black transition p-1 rounded-full shadow-sm"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-
-          <div className="flex items-center justify-center h-full">
-            {selectedImage && (
-              <img
-                src={selectedImage}
-                alt="Enlarged crop preview"
-                className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-md"
-              />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <PriceTrendDrawer />
     </div>
   );
 };

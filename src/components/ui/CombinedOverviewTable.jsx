@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "./table";
 import { Link } from "react-router-dom";
+import { format } from "date-fns";
 
 const overviewAlertData = [
   {
@@ -53,9 +54,9 @@ const overviewMarketData = [
 
 export function CombinedOverviewTable() {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+    <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
       <Tabs defaultValue="alerts">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 border-b border-gray-200">
           <TabsList className="bg-gray-100">
             <TabsTrigger
               value="alerts"
@@ -79,96 +80,132 @@ export function CombinedOverviewTable() {
           </Link>
         </div>
 
+        {/* Price Alerts Table */}
         <TabsContent value="alerts">
-          <Table className="min-w-[600px]">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-gray-600">Crop</TableHead>
-                <TableHead className="text-gray-600">Type</TableHead>
-                <TableHead className="text-gray-600">Threshold</TableHead>
-                <TableHead className="text-gray-600">Status</TableHead>
-                <TableHead className="text-right text-gray-600">
-                  Market
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {overviewAlertData.map((alert) => (
-                <TableRow key={alert.id} className="hover:bg-gray-50">
-                  <TableCell className="font-medium text-gray-800">
-                    {alert.crop}
-                  </TableCell>
-                  <TableCell>
-                    <Badge className="bg-gray-100 text-gray-700 capitalize">
-                      {alert.type}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="font-semibold text-gray-800">
-                    ₦{alert.threshold.toLocaleString()}/100kg
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      className={
-                        alert.status === "active"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-100 text-gray-700"
-                      }
-                    >
-                      {alert.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right text-gray-600">
-                    {alert.market}
-                  </TableCell>
+          <div className="p-4">
+            <Table className="min-w-[600px]">
+              <TableHeader className="bg-gray-50">
+                <TableRow>
+                  <TableHead className="text-gray-600 py-3">Crop</TableHead>
+                  <TableHead className="text-gray-600">Type</TableHead>
+                  <TableHead className="text-gray-600 text-right">
+                    Threshold
+                  </TableHead>
+                  <TableHead className="text-gray-600">Status</TableHead>
+                  <TableHead className="text-gray-600 text-right">
+                    Market
+                  </TableHead>
+                  <TableHead className="text-gray-600 text-right">
+                    Action
+                  </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {overviewAlertData.map((alert) => (
+                  <TableRow key={alert.id} className="hover:bg-gray-50">
+                    <TableCell className="font-medium text-gray-800 py-2">
+                      {alert.crop}
+                    </TableCell>
+                    <TableCell className="py-2">
+                      <Badge className="bg-gray-100 text-gray-700 capitalize px-2 py-1 rounded-md">
+                        {alert.type}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right font-semibold text-gray-800 py-2">
+                      ₦{alert.threshold.toLocaleString()}/100kg
+                    </TableCell>
+                    <TableCell className="py-2">
+                      <Badge
+                        className={`px-2 py-1 rounded-md ${
+                          alert.status === "active"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-blue-100 text-blue-700"
+                        }`}
+                      >
+                        {alert.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right text-gray-600 py-2">
+                      {alert.market}
+                    </TableCell>
+                    <TableCell className="text-right py-2">
+                      <Link
+                        to="#"
+                        className="text-blue-600 hover:text-blue-800 text-sm"
+                      >
+                        View
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <div className="mt-3 text-sm text-gray-600">
+              Showing 02+00 of {overviewAlertData.length}
+            </div>
+          </div>
         </TabsContent>
 
+        {/* Tracked Markets Table */}
         <TabsContent value="markets">
-          <Table className="min-w-[600px]">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-gray-600">Market</TableHead>
-                <TableHead className="text-gray-600">Location</TableHead>
-                <TableHead className="text-gray-600">Active Alerts</TableHead>
-                <TableHead className="text-gray-600">Last Update</TableHead>
-                <TableHead className="text-right text-gray-600">
-                  Status
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {overviewMarketData.map((market) => (
-                <TableRow key={market.id} className="hover:bg-gray-50">
-                  <TableCell className="font-medium text-gray-800">
-                    {market.name}
-                  </TableCell>
-                  <TableCell>{market.location}</TableCell>
-                  <TableCell>
-                    <Badge className="bg-blue-100 text-blue-700">
-                      {market.activeAlerts}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {new Date(market.lastUpdate).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Badge
-                      className={
-                        market.status === "active"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-gray-100 text-gray-700"
-                      }
-                    >
-                      {market.status}
-                    </Badge>
-                  </TableCell>
+          <div className="p-4">
+            <Table className="min-w-[600px]">
+              <TableHeader className="bg-gray-50">
+                <TableRow>
+                  <TableHead className="text-gray-600 py-3">Market</TableHead>
+                  <TableHead className="text-gray-600">Location</TableHead>
+                  <TableHead className="text-gray-600">Alerts</TableHead>
+                  <TableHead className="text-gray-600">Last Update</TableHead>
+                  <TableHead className="text-gray-600 text-right">
+                    Status
+                  </TableHead>
+                  <TableHead className="text-gray-600 text-right">
+                    Action
+                  </TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {overviewMarketData.map((market) => (
+                  <TableRow key={market.id} className="hover:bg-gray-50">
+                    <TableCell className="font-medium text-gray-800 py-2">
+                      {market.name}
+                    </TableCell>
+                    <TableCell className="py-2">{market.location}</TableCell>
+                    <TableCell className="py-2">
+                      <Badge className="bg-blue-100 text-blue-700 px-2 py-1 rounded-md">
+                        {market.activeAlerts}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="py-2">
+                      {format(new Date(market.lastUpdate), "dd MMM yyyy")}
+                    </TableCell>
+                    <TableCell className="text-right py-2">
+                      <Badge
+                        className={`px-2 py-1 rounded-md ${
+                          market.status === "active"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {market.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right py-2">
+                      <Link
+                        to="#"
+                        className="text-blue-600 hover:text-blue-800 text-sm"
+                      >
+                        View
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <div className="mt-3 text-sm text-gray-600">
+              Showing 02+00 of {overviewMarketData.length}
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
