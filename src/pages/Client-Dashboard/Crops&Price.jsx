@@ -1,4 +1,3 @@
-// CropsPrice.jsx
 import { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import {
@@ -151,14 +150,12 @@ const CropsPrice = () => {
         {
           label: "Price (₦)",
           data: prices,
-          borderColor: "#16a34a",
-          backgroundColor: "rgba(22, 163, 74, 0.1)",
+          borderColor: "hsl(215.4 16.3% 46.9%)", // Using slate-500
+          backgroundColor: "hsl(215.4 16.3% 46.9% / 0.1)",
           tension: 0.4,
           fill: true,
-          pointRadius: 4,
-          pointBackgroundColor: "#16a34a",
-          pointBorderColor: "#fff",
-          pointHoverRadius: 6,
+          pointRadius: 0,
+          borderWidth: 2,
         },
       ],
     };
@@ -169,12 +166,12 @@ const CropsPrice = () => {
       plugins: {
         legend: { display: false },
         tooltip: {
-          mode: "index",
+          mode: "nearest",
           intersect: false,
-          backgroundColor: "#fff",
-          titleColor: "#1f2937",
-          bodyColor: "#1f2937",
-          borderColor: "#e5e7eb",
+          backgroundColor: "hsl(224 71% 4%)",
+          titleColor: "hsl(210 40% 98%)",
+          bodyColor: "hsl(210 40% 98%)",
+          borderColor: "hsl(215.4 16.3% 46.9%)",
           borderWidth: 1,
           padding: 12,
           callbacks: {
@@ -182,21 +179,72 @@ const CropsPrice = () => {
           },
         },
       },
+      interaction: {
+        mode: "nearest",
+        axis: "x",
+        intersect: false,
+      },
       scales: {
         x: {
-          grid: { display: false },
-          ticks: { color: "#6b7280" },
+          grid: {
+            display: false,
+            drawTicks: false,
+          },
+          ticks: {
+            color: "hsl(215.4 16.3% 46.9%)",
+            font: {
+              weight: 500,
+            },
+          },
+          border: {
+            color: "hsl(215.4 16.3% 46.9% / 0.2)",
+          },
         },
         y: {
           beginAtZero: false,
-          grid: { color: "#f3f4f6" },
+          grid: {
+            color: "hsl(215.4 16.3% 46.9% / 0.1)",
+            drawTicks: false,
+          },
           ticks: {
-            color: "#6b7280",
+            color: "hsl(215.4 16.3% 46.9%)",
             callback: (value) => `₦${Number(value).toLocaleString()}`,
+            font: {
+              weight: 500,
+            },
+          },
+          border: {
+            color: "hsl(215.4 16.3% 46.9% / 0.2)",
           },
         },
       },
+      elements: {
+        line: {
+          cubicInterpolationMode: "monotonic",
+        },
+      },
     };
+
+    // Update the metrics display section
+    const MetricCard = ({ title, value, change }) => (
+      <div className="p-4 bg-background rounded-lg border">
+        <p className="text-sm text-muted-foreground mb-1">{title}</p>
+        <div className="flex items-center justify-between">
+          <p className="text-lg font-semibold">
+            {typeof value === "string" ? value : `₦${value?.toLocaleString()}`}
+          </p>
+          {change && (
+            <span
+              className={`text-sm ${
+                change.startsWith("+") ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              {change}
+            </span>
+          )}
+        </div>
+      </div>
+    );
 
     return (
       <div
@@ -204,38 +252,26 @@ const CropsPrice = () => {
           selectedCrop ? "visible" : "invisible"
         }`}
       >
-        {/* Backdrop */}
         <div
           className="fixed inset-0 bg-black/50 transition-opacity"
           onClick={() => setSelectedCrop(null)}
         />
 
-        {/* Drawer Content */}
+        {/* Updated Drawer Content */}
         <div
-          className={`fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-xl transition-transform duration-300 ${
+          className={`fixed bottom-0 left-0 right-0 bg-background rounded-t-2xl shadow-xl transition-transform duration-300 ${
             selectedCrop ? "translate-y-0" : "translate-y-full"
           }`}
           style={{ height: "85vh" }}
         >
-          {/* Drag Handle */}
           <div className="absolute left-1/2 top-2 -translate-x-1/2">
             <div className="h-1.5 w-12 rounded-full bg-gray-300" />
           </div>
 
-          {/* Close Button */}
-          <button
-            onClick={() => setSelectedCrop(null)}
-            className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100"
-          >
-            <X className="h-5 w-5 text-gray-600" />
-          </button>
-
-          {/* Content Container */}
           <div className="h-full flex flex-col overflow-hidden">
-            {/* Header */}
-            <div className="px-6 pt-6 pb-4 border-b">
+            <div className="px-6 pt-6 pb-4 mt-10 border-b">
               <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">
+                <h2 className="text-2xl font-semibold tracking-tight">
                   {selectedCrop?.name} Market Trends
                 </h2>
                 <Select value={timePeriod} onValueChange={setTimePeriod}>
@@ -250,41 +286,28 @@ const CropsPrice = () => {
               </div>
             </div>
 
-            {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto p-6">
               <div className="space-y-6">
-                <div className="h-[300px]">
+                <div className="h-[300px] relative">
+                  <div className="absolute inset-0 bg-gradient-to-b from-background via-background/50 to-transparent z-10 pointer-events-none" />
                   <Line data={chartData} options={options} />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                  <div className="p-4 bg-green-50 rounded-lg">
-                    <p className="text-sm text-muted-foreground">
-                      Current Price
-                    </p>
-                    <p className="text-xl font-semibold">
-                      ₦{prices[prices.length - 1]?.toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="p-4 bg-green-50 rounded-lg">
-                    <p className="text-sm text-muted-foreground">7D Change</p>
-                    <p className="text-xl font-semibold text-green-600">
-                      +4.2% ↗
-                    </p>
-                  </div>
-                  <div className="p-4 bg-green-50 rounded-lg">
-                    <p className="text-sm text-muted-foreground">30D High</p>
-                    <p className="text-xl font-semibold">₦18,200</p>
-                  </div>
-                  <div className="p-4 bg-green-50 rounded-lg">
-                    <p className="text-sm text-muted-foreground">30D Low</p>
-                    <p className="text-xl font-semibold">₦15,800</p>
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <MetricCard
+                    title="Current Price"
+                    value={prices[prices.length - 1]}
+                  />
+                  <MetricCard title="7D Change" value="+4.2%" change="+4.2%" />
+                  <MetricCard title="30D High" value="₦18,200" />
+                  <MetricCard title="30D Low" value="₦15,800" />
                 </div>
 
-                <div className="text-sm text-muted-foreground">
-                  <TrendingUp className="h-4 w-4 mr-2 inline-block" />
-                  Prices trending above 3-month average in 12 markets
+                <div className="text-sm text-muted-foreground flex items-center">
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  <span>
+                    Prices trending above 3-month average in 12 markets
+                  </span>
                 </div>
               </div>
             </div>

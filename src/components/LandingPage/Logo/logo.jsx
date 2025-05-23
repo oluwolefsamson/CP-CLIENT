@@ -7,7 +7,7 @@ const CropWiseLogo = () => {
       <img
         src={LogoImg}
         alt="Logo"
-        className="h-[80px] rounded-full border-2 border-green-600"
+        className="h-[40px] lg:h-[80px]  rounded-full border-2 border-green-600"
       />
       <div
         className="flex items-center text-4xl font-black text-green-600"
