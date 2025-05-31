@@ -34,7 +34,14 @@ import {
   SelectValue,
 } from "../../components/ui/select";
 import { Skeleton } from "../../components/ui/skeleton";
-import { AlertCircle, TrendingUp, X } from "lucide-react";
+import {
+  AlertCircle,
+  TrendingUp,
+  X,
+  Bookmark,
+  Share2,
+  Eye,
+} from "lucide-react";
 import cornImg from "../../assets/images/crops/corn.jpeg";
 import milletImg from "../../assets/images/crops/millet.jpeg";
 import guineaCornImg from "../../assets/images/crops/guinea-corn.jpeg";
@@ -69,6 +76,8 @@ const CropsPrice = () => {
       unit: "₦/bag",
       markets: 12,
       image: cornImg,
+      trend: "+4.2%",
+      lastUpdated: "2h ago",
     },
     {
       id: 2,
@@ -78,6 +87,8 @@ const CropsPrice = () => {
       unit: "₦/bag",
       markets: 8,
       image: milletImg,
+      trend: "+2.1%",
+      lastUpdated: "4h ago",
     },
     {
       id: 3,
@@ -87,6 +98,8 @@ const CropsPrice = () => {
       unit: "₦/bag",
       markets: 3,
       image: guineaCornImg,
+      trend: "-1.3%",
+      lastUpdated: "1d ago",
     },
     {
       id: 4,
@@ -96,6 +109,8 @@ const CropsPrice = () => {
       unit: "₦/bag",
       markets: 5,
       image: riceImg,
+      trend: "+5.7%",
+      lastUpdated: "6h ago",
     },
   ];
 
@@ -150,7 +165,7 @@ const CropsPrice = () => {
         {
           label: "Price (₦)",
           data: prices,
-          borderColor: "hsl(215.4 16.3% 46.9%)", // Using slate-500
+          borderColor: "hsl(215.4 16.3% 46.9%)",
           backgroundColor: "hsl(215.4 16.3% 46.9% / 0.1)",
           tension: 0.4,
           fill: true,
@@ -225,9 +240,8 @@ const CropsPrice = () => {
       },
     };
 
-    // Update the metrics display section
     const MetricCard = ({ title, value, change }) => (
-      <div className="p-4 bg-background rounded-lg border">
+      <div className="p-4 bg-background rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
         <p className="text-sm text-muted-foreground mb-1">{title}</p>
         <div className="flex items-center justify-between">
           <p className="text-lg font-semibold">
@@ -235,7 +249,7 @@ const CropsPrice = () => {
           </p>
           {change && (
             <span
-              className={`text-sm ${
+              className={`text-sm font-medium ${
                 change.startsWith("+") ? "text-green-600" : "text-red-600"
               }`}
             >
@@ -257,7 +271,6 @@ const CropsPrice = () => {
           onClick={() => setSelectedCrop(null)}
         />
 
-        {/* Updated Drawer Content */}
         <div
           className={`fixed bottom-0 left-0 right-0 bg-background rounded-t-2xl shadow-xl transition-transform duration-300 ${
             selectedCrop ? "translate-y-0" : "translate-y-full"
@@ -269,16 +282,16 @@ const CropsPrice = () => {
           </div>
 
           <div className="h-full flex flex-col overflow-hidden">
-            <div className="px-6 pt-6 pb-4 mt-10 border-b">
+            <div className="px-6 pt-6 pb-4 mt-10 border-b border-gray-200 dark:border-gray-700">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-semibold tracking-tight">
                   {selectedCrop?.name} Market Trends
                 </h2>
                 <Select value={timePeriod} onValueChange={setTimePeriod}>
-                  <SelectTrigger className="w-[120px]">
+                  <SelectTrigger className="w-[120px] bg-white dark:bg-gray-800">
                     <SelectValue placeholder="Time period" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white dark:bg-gray-800">
                     <SelectItem value="7d">7 Days</SelectItem>
                     <SelectItem value="30d">30 Days</SelectItem>
                   </SelectContent>
@@ -304,7 +317,7 @@ const CropsPrice = () => {
                 </div>
 
                 <div className="text-sm text-muted-foreground flex items-center">
-                  <TrendingUp className="h-4 w-4 mr-2" />
+                  <TrendingUp className="h-4 w-4 mr-2 text-green-500" />
                   <span>
                     Prices trending above 3-month average in 12 markets
                   </span>
@@ -317,9 +330,43 @@ const CropsPrice = () => {
     );
   };
 
+  const ImagePreviewModal = () => {
+    if (!selectedImage) return null;
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4">
+        <button
+          className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-20"
+          onClick={() => setSelectedImage(null)}
+        >
+          <X className="h-8 w-8" />
+        </button>
+
+        <div className="w-full max-w-4xl">
+          <div className="relative aspect-video w-full max-h-[80vh]">
+            <img
+              src={selectedImage}
+              alt="Crop preview"
+              className="w-full h-full object-contain shadow-xl"
+            />
+
+            {!selectedImage && (
+              <div className="absolute inset-0 bg-gray-800 animate-pulse rounded-lg" />
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
       <Tabs defaultValue="explore" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-8">
+          <TabsTrigger value="explore">Market Prices</TabsTrigger>
+          <TabsTrigger value="submit">Submit Price</TabsTrigger>
+        </TabsList>
+
         <TabsContent value="explore">
           <div className="mb-8 flex flex-col md:flex-row gap-4">
             <Input
@@ -332,10 +379,10 @@ const CropsPrice = () => {
               value={selectedCategory}
               onValueChange={setSelectedCategory}
             >
-              <SelectTrigger className="w-full md:w-[180px]">
+              <SelectTrigger className="w-full md:w-[180px] bg-white dark:bg-gray-800">
                 <SelectValue placeholder="Filter category" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white dark:bg-gray-800">
                 <SelectItem value="all">All Crops</SelectItem>
                 <SelectItem value="grains">Grains</SelectItem>
                 <SelectItem value="vegetables">Vegetables</SelectItem>
@@ -344,113 +391,154 @@ const CropsPrice = () => {
             </Select>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-7">
             {loading ? (
-              Array(4)
+              Array(8)
                 .fill(0)
                 .map((_, i) => (
-                  <Card key={i} className="animate-pulse h-[400px]">
-                    <Skeleton className="h-full w-full" />
-                  </Card>
+                  <div
+                    key={i}
+                    className="rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700"
+                  >
+                    <div className="aspect-video bg-gray-100 dark:bg-gray-800 animate-pulse" />
+                    <div className="p-5 space-y-4">
+                      <div className="flex justify-between">
+                        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 animate-pulse" />
+                        <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-16 animate-pulse" />
+                      </div>
+                      <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-full animate-pulse" />
+                      <div className="flex gap-3">
+                        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg flex-1 animate-pulse" />
+                        <div className="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
+                      </div>
+                    </div>
+                  </div>
                 ))
             ) : filteredCrops.length > 0 ? (
               filteredCrops.map((crop) => (
-                <Card
+                <div
                   key={crop.id}
-                  className="group hover:shadow-2xl transition-all duration-300 ease-in-out h-[400px] relative overflow-hidden rounded-2xl cursor-pointer border border-green-200"
-                  onClick={() => setSelectedImage(crop.image)}
+                  className="group bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all duration-300"
                 >
-                  <div className="absolute inset-0 z-0">
+                  {/* Image Section with View Button */}
+                  <div className="relative aspect-video overflow-hidden">
                     <img
                       src={crop.image}
                       alt={crop.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 cursor-pointer"
+                      onClick={() => setSelectedImage(crop.image)}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+                    <div className="absolute top-3 right-3">
+                      <button
+                        className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-full px-3 py-1 text-sm font-medium shadow-md flex items-center gap-1 hover:bg-white dark:hover:bg-gray-800 transition-colors"
+                        onClick={() => setSelectedImage(crop.image)}
+                      >
+                        <Eye className="h-4 w-4" />
+                        View
+                      </button>
+                    </div>
+                    <div className="absolute bottom-3 left-3 bg-gradient-to-r from-green-600 to-green-700 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
+                      {crop.markets} markets
+                    </div>
                   </div>
 
-                  <div className="relative z-10 h-full flex flex-col justify-end p-6">
-                    <CardHeader className="p-0">
-                      <CardTitle className="flex justify-between items-start">
-                        <span className="text-lg font-semibold text-white drop-shadow-md">
-                          {crop.name}
-                        </span>
-                        <span className="text-sm font-medium bg-white/20 text-white px-3 py-1 rounded-full backdrop-blur-md shadow-md">
-                          {crop.markets} markets
-                        </span>
-                      </CardTitle>
-                    </CardHeader>
+                  {/* Content Section */}
+                  <div className="p-5">
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                        {crop.name}
+                      </h3>
+                      <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900/50 dark:text-green-200">
+                        {crop.category}
+                      </span>
+                    </div>
 
-                    <CardContent className="text-white p-0 space-y-2 mt-4">
-                      <div className="text-xl font-extrabold text-green-200 drop-shadow-sm">
-                        ₦{crop.priceRange[0].toLocaleString()} - ₦
-                        {crop.priceRange[1].toLocaleString()}
-                        <span className="text-sm text-green-100 ml-2">
+                    {/* Price Section */}
+                    <div className="mb-4">
+                      <div className="flex items-baseline gap-2 mb-1">
+                        <span className="text-2xl font-extrabold text-green-600 dark:text-green-400">
+                          ₦{crop.priceRange[0].toLocaleString()}
+                        </span>
+                        <span className="text-gray-400">-</span>
+                        <span className="text-2xl font-extrabold text-green-600 dark:text-green-400">
+                          ₦{crop.priceRange[1].toLocaleString()}
+                        </span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">
                           /{crop.unit}
                         </span>
                       </div>
-                      <div className="flex items-center text-sm text-green-100">
-                        <AlertCircle className="h-4 w-4 mr-2 text-yellow-300" />
-                        Updated 2h ago
-                      </div>
-                    </CardContent>
 
-                    <CardFooter className="p-0 mt-6">
-                      <div className="flex items-center w-full gap-3">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedCrop(crop);
-                          }}
-                          className="w-3/4 flex items-center justify-center gap-2 py-4 px-4 bg-white text-gray-900 font-semibold rounded-full shadow-lg transition-transform hover:scale-105 hover:shadow-xl"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-7 w-7 text-green-600"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m-18 8h18a2 2 0 002-2V6a2 2 0 00-2-2H3a2 2 0 00-2 2v8a2 2 0 002 2z"
-                            />
-                          </svg>
-                          View Trends
-                        </button>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                          <AlertCircle className="h-4 w-4 mr-1 text-yellow-500" />
+                          Updated {crop.lastUpdated}
+                        </div>
 
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            console.log("Bookmarked:", crop.name);
-                          }}
-                          className="w-[70px] h-[60px] aspect-square flex items-center justify-center rounded-3xl bg-gray-500 text-white hover:bg-gray-700 shadow-lg hover:shadow-xl transition-all"
+                        <span
+                          className={`text-sm font-semibold px-2 py-0.5 rounded-full ${
+                            crop.trend.startsWith("+")
+                              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                              : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                          }`}
                         >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M5 5v14l7-7 7 7V5a2 2 0 00-2-2H7a2 2 0 00-2 2z"
-                            />
-                          </svg>
-                        </button>
+                          {crop.trend}
+                        </span>
                       </div>
-                    </CardFooter>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => setSelectedCrop(crop)}
+                        className="flex-1 text-white bg-gradient-to-r from-green-500 to-green-500 hover:from-green-500 hover:to-green-600 transition-all shadow-md"
+                      >
+                        <TrendingUp className="h-4 w-4 mr-2 text-white" />
+                        View Trends
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        className="px-3 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log("Bookmarked:", crop.name);
+                        }}
+                      >
+                        <Bookmark className="h-4 w-4" />
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        className="px-3 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log("Shared:", crop.name);
+                        }}
+                      >
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </Card>
+                </div>
               ))
             ) : (
-              <div className="col-span-full text-center py-12 text-gray-500">
-                No crops found matching your criteria
+              <div className="col-span-full text-center py-16 px-4 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
+                <X className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+                <h3 className="text-xl font-medium text-gray-800 dark:text-gray-200">
+                  No crops found
+                </h3>
+                <p className="mt-2 text-gray-600 dark:text-gray-400 max-w-md mx-auto">
+                  Try adjusting your search or filter criteria
+                </p>
+                <Button
+                  className="mt-4"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedCategory("all");
+                  }}
+                >
+                  Clear Filters
+                </Button>
               </div>
             )}
           </div>
@@ -459,79 +547,10 @@ const CropsPrice = () => {
         <TabsContent value="submit">
           <SubmitPrice crops={mockCrops} />
         </TabsContent>
-
-        <TabsContent value="alerts">
-          <Card className="max-w-2xl mx-auto">
-            <CardHeader>
-              <CardTitle className="text-2xl">Price Alerts</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Select className="flex-1">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select crop" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {mockCrops.map((crop) => (
-                      <SelectItem key={crop.id} value={crop.id.toString()}>
-                        {crop.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select className="w-[120px]">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Condition" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="above">Above</SelectItem>
-                    <SelectItem value="below">Below</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Input
-                  type="number"
-                  placeholder="Price"
-                  className="w-[150px]"
-                />
-
-                <Button variant="outline" className="whitespace-nowrap">
-                  Add Alert
-                </Button>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="font-medium text-lg">Active Alerts</h3>
-                <div className="space-y-2">
-                  {[1, 2, 3].map((alert) => (
-                    <div
-                      key={alert}
-                      className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-100"
-                    >
-                      <div>
-                        <div className="font-medium">Maize</div>
-                        <div className="text-sm text-muted-foreground">
-                          Notify when price exceeds ₦20,000/bag
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
 
       <PriceTrendDrawer />
+      <ImagePreviewModal />
     </div>
   );
 };

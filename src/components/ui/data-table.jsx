@@ -34,6 +34,7 @@ import {
   LoaderIcon,
   MoreVerticalIcon,
   PlusIcon,
+  XIcon,
 } from "lucide-react";
 import { z } from "zod";
 import { Toaster } from "sonner";
@@ -519,115 +520,320 @@ export function DataTable({ data = sampleData }) {
                   New Alert
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-white border-gray-200 max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="text-gray-800">
-                    Create New Price Alert
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-gray-700">Crop Type</Label>
-                    <Input
-                      value={newAlert.crop}
-                      onChange={(e) =>
-                        setNewAlert((prev) => ({
-                          ...prev,
-                          crop: e.target.value,
-                        }))
-                      }
-                      className="border-gray-300"
-                      placeholder="e.g. Maize, Rice..."
-                    />
-                    {formErrors.crop && (
-                      <span className="text-red-500 text-sm">
-                        {formErrors.crop[0]}
-                      </span>
-                    )}
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-gray-700">Alert Type</Label>
-                    <Select
-                      value={newAlert.type}
-                      onValueChange={(value) =>
-                        setNewAlert((prev) => ({ ...prev, type: value }))
-                      }
-                    >
-                      <SelectTrigger className="border-gray-300 text-gray-700">
-                        <SelectValue placeholder="Select alert type" />
-                      </SelectTrigger>
-                      <SelectContent className="border-gray-200 bg-white">
-                        <SelectItem value="above" className="focus:bg-gray-100">
-                          Price Above
-                        </SelectItem>
-                        <SelectItem value="below" className="focus:bg-gray-100">
-                          Price Below
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+              {/* Professional Bottom Drawer */}
+              <div
+                className={clsx(
+                  "fixed inset-0 z-50 transition-all duration-300 ease-in-out",
+                  openNewAlert
+                    ? "bg-black/30 backdrop-blur-sm"
+                    : "pointer-events-none opacity-0"
+                )}
+              >
+                <div
+                  className={clsx(
+                    "fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl border-t border-gray-200 shadow-lg",
+                    "transition-transform duration-300 ease-in-out transform",
+                    openNewAlert ? "translate-y-0" : "translate-y-full"
+                  )}
+                  style={{ height: "80vh" }}
+                >
+                  <div className="flex flex-col h-full">
+                    {/* Drawer Header */}
+                    <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+                      <h2 className="text-xl font-bold text-gray-800">
+                        Create New Price Alert
+                      </h2>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setOpenNewAlert(false)}
+                        className="text-gray-500 hover:bg-gray-100"
+                      >
+                        <XIcon className="size-5" />
+                      </Button>
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-green-700">Threshold Price</Label>
-                    <Input
-                      type="number"
-                      value={newAlert.threshold}
-                      onChange={(e) =>
-                        setNewAlert((prev) => ({
-                          ...prev,
-                          threshold: e.target.value,
-                        }))
-                      }
-                      className="border-green-200"
-                      placeholder="Enter price per 100kg"
-                    />
-                    {formErrors.threshold && (
-                      <span className="text-red-500 text-sm">
-                        {formErrors.threshold[0]}
-                      </span>
-                    )}
-                  </div>
+                    {/* Professional Layout: Image + Form */}
+                    <div className="flex flex-1 overflow-hidden">
+                      {/* Left Side - Illustration */}
+                      <div className="hidden md:flex w-2/5 bg-gradient-to-br from-green-50 to-emerald-50 p-8 items-center justify-center">
+                        <div className="max-w-md text-center">
+                          <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-64 flex items-center justify-center text-gray-500 mb-6">
+                            <div className="text-center">
+                              <div className="bg-green-200 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <ActivityIcon className="text-green-700 size-8" />
+                              </div>
+                              <p className="font-medium text-gray-700">
+                                Market Monitoring
+                              </p>
+                              <p className="text-sm mt-2 text-gray-500">
+                                Visualize price trends and set alerts
+                              </p>
+                            </div>
+                          </div>
+                          <div className="mt-6 space-y-3">
+                            <div className="flex items-center gap-3">
+                              <div className="bg-green-100 rounded-full p-2">
+                                <CheckCircle2Icon className="text-green-600 size-5" />
+                              </div>
+                              <p className="text-sm text-gray-700">
+                                Monitor price movements in real-time
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className="bg-green-100 rounded-full p-2">
+                                <CheckCircle2Icon className="text-green-600 size-5" />
+                              </div>
+                              <p className="text-sm text-gray-700">
+                                Get notified when prices hit your target
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className="bg-green-100 rounded-full p-2">
+                                <CheckCircle2Icon className="text-green-600 size-5" />
+                              </div>
+                              <p className="text-sm text-gray-700">
+                                Make informed trading decisions
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-green-700">
-                      Specific Market (optional)
-                    </Label>
-                    <Input
-                      value={newAlert.market}
-                      onChange={(e) =>
-                        setNewAlert((prev) => ({
-                          ...prev,
-                          market: e.target.value,
-                        }))
-                      }
-                      className="border-green-200"
-                      placeholder="All markets"
-                    />
-                    {formErrors.market && (
-                      <span className="text-red-500 text-sm">
-                        {formErrors.market[0]}
-                      </span>
-                    )}
-                  </div>
+                      {/* Right Side - Form */}
+                      <div className="w-full md:w-3/5 p-6 md:p-8 overflow-y-auto">
+                        <div className="max-w-md mx-auto">
+                          <h3 className="text-lg font-semibold text-gray-800 mb-6">
+                            Alert Configuration
+                          </h3>
 
-                  <div className="flex justify-end gap-2 mt-6">
-                    <Button
-                      variant="outline"
-                      className="border-green-200 text-green-700 hover:bg-green-50/20"
-                      onClick={() => setOpenNewAlert(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      className="bg-green-600 hover:bg-green-700"
-                      onClick={handleCreateAlert}
-                    >
-                      Create Alert
-                    </Button>
+                          <div className="space-y-6">
+                            <div>
+                              <Label className="block text-sm font-medium text-gray-700 mb-2">
+                                Crop Type
+                                <span className="text-red-500 ml-1">*</span>
+                              </Label>
+                              <Input
+                                value={newAlert.crop}
+                                onChange={(e) =>
+                                  setNewAlert((prev) => ({
+                                    ...prev,
+                                    crop: e.target.value,
+                                  }))
+                                }
+                                className="border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                placeholder="e.g. Maize, Rice, Sorghum..."
+                              />
+                              {formErrors.crop && (
+                                <p className="mt-1 text-sm text-red-500">
+                                  {formErrors.crop[0]}
+                                </p>
+                              )}
+                            </div>
+
+                            <div>
+                              <Label className="block text-sm font-medium text-gray-700 mb-2">
+                                Alert Type
+                                <span className="text-red-500 ml-1">*</span>
+                              </Label>
+                              <Select
+                                value={newAlert.type}
+                                onValueChange={(value) =>
+                                  setNewAlert((prev) => ({
+                                    ...prev,
+                                    type: value,
+                                  }))
+                                }
+                              >
+                                <SelectTrigger className="border-gray-300 text-gray-700 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                  <SelectValue placeholder="Select alert type" />
+                                </SelectTrigger>
+                                <SelectContent className="border-gray-200 bg-white shadow-lg">
+                                  <SelectItem
+                                    value="above"
+                                    className="focus:bg-gray-100 py-3"
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <div className="bg-green-100 p-1 rounded">
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          className="h-4 w-4 text-green-600"
+                                          viewBox="0 0 20 20"
+                                          fill="currentColor"
+                                        >
+                                          <path
+                                            fillRule="evenodd"
+                                            d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
+                                            clipRule="evenodd"
+                                          />
+                                        </svg>
+                                      </div>
+                                      <span>Price Above</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem
+                                    value="below"
+                                    className="focus:bg-gray-100 py-3"
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <div className="bg-purple-100 p-1 rounded">
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          className="h-4 w-4 text-purple-600"
+                                          viewBox="0 0 20 20"
+                                          fill="currentColor"
+                                        >
+                                          <path
+                                            fillRule="evenodd"
+                                            d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z"
+                                            clipRule="evenodd"
+                                          />
+                                        </svg>
+                                      </div>
+                                      <span>Price Below</span>
+                                    </div>
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div>
+                              <Label className="block text-sm font-medium text-gray-700 mb-2">
+                                Threshold Price (₦/100kg)
+                                <span className="text-red-500 ml-1">*</span>
+                              </Label>
+                              <div className="relative">
+                                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">
+                                  ₦
+                                </span>
+                                <Input
+                                  type="number"
+                                  value={newAlert.threshold}
+                                  onChange={(e) =>
+                                    setNewAlert((prev) => ({
+                                      ...prev,
+                                      threshold: e.target.value,
+                                    }))
+                                  }
+                                  className="border-gray-300 pl-8 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                  placeholder="Enter target price"
+                                />
+                              </div>
+                              {formErrors.threshold && (
+                                <p className="mt-1 text-sm text-red-500">
+                                  {formErrors.threshold[0]}
+                                </p>
+                              )}
+                            </div>
+
+                            <div>
+                              <Label className="block text-sm font-medium text-gray-700 mb-2">
+                                Market
+                              </Label>
+                              <Select>
+                                <SelectTrigger className="border-gray-300 text-gray-700 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                  <SelectValue placeholder="Select market" />
+                                </SelectTrigger>
+                                <SelectContent className="border-gray-200 bg-white shadow-lg">
+                                  <SelectItem
+                                    value="all"
+                                    className="focus:bg-gray-100"
+                                  >
+                                    All Markets
+                                  </SelectItem>
+                                  <SelectItem
+                                    value="lagos"
+                                    className="focus:bg-gray-100"
+                                  >
+                                    Lagos Main Market
+                                  </SelectItem>
+                                  <SelectItem
+                                    value="kano"
+                                    className="focus:bg-gray-100"
+                                  >
+                                    Kano Central Market
+                                  </SelectItem>
+                                  <SelectItem
+                                    value="abuja"
+                                    className="focus:bg-gray-100"
+                                  >
+                                    Abuja Wholesale
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <p className="mt-2 text-xs text-gray-500">
+                                Leave blank to monitor all markets
+                              </p>
+                            </div>
+
+                            <div className="pt-4">
+                              <Label className="block text-sm font-medium text-gray-700 mb-2">
+                                Notification Method
+                              </Label>
+                              <div className="grid grid-cols-2 gap-3">
+                                <div className="flex items-center gap-2 border border-gray-300 rounded-lg p-3 hover:border-green-500">
+                                  <Checkbox
+                                    id="email-notify"
+                                    className="border-gray-400"
+                                  />
+                                  <Label
+                                    htmlFor="email-notify"
+                                    className="text-gray-700"
+                                  >
+                                    Email
+                                  </Label>
+                                </div>
+                                <div className="flex items-center gap-2 border border-gray-300 rounded-lg p-3 hover:border-green-500">
+                                  <Checkbox
+                                    id="sms-notify"
+                                    className="border-gray-400"
+                                  />
+                                  <Label
+                                    htmlFor="sms-notify"
+                                    className="text-gray-700"
+                                  >
+                                    SMS
+                                  </Label>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Drawer Footer */}
+                    <div className="p-4 border-t border-gray-200 bg-white">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-700">
+                            Need help?
+                          </h4>
+                          <p className="text-xs text-gray-500">
+                            Contact support@agromonitor.com
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                            onClick={() => setOpenNewAlert(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            className="bg-green-600 hover:bg-green-700 shadow-sm"
+                            onClick={handleCreateAlert}
+                          >
+                            Create Price Alert
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </DialogContent>
+              </div>
             </Dialog>
           </div>
         </div>
@@ -831,27 +1037,10 @@ export function DataTable({ data = sampleData }) {
           </div>
         </TabsContent>
       </Tabs>
+      <Toaster richColors position="top-right" />
     </div>
   );
 }
-
-// function TableCellViewer({ item }) {
-//   return (
-//     <div className="flex items-center gap-2">
-//       <span className="font-medium text-green-800">
-//         {item.crop || "Unknown Crop"}
-//       </span>
-//       {item.market && (
-//         <Badge
-//           variant="outline"
-//           className="ml-2 border-green-200 text-green-700 bg-green-50/30"
-//         >
-//           {item.market}
-//         </Badge>
-//       )}
-//     </div>
-//   );
-// }
 
 export class ErrorBoundary extends React.Component {
   constructor(props) {
