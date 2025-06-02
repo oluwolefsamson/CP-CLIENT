@@ -443,7 +443,7 @@ const SubmitPrice = () => {
                           <SelectTrigger>
                             <SelectValue placeholder="Select crop" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="bg-white">
                             {crops.map((crop) => (
                               <SelectItem
                                 key={crop.id}

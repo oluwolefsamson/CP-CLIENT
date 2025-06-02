@@ -823,7 +823,7 @@ export function DataTable({ data = sampleData }) {
                             Cancel
                           </Button>
                           <Button
-                            className="bg-green-600 hover:bg-green-700 shadow-sm"
+                            className="bg-green-600 hover:bg-green-700 shadow-sm text-white"
                             onClick={handleCreateAlert}
                           >
                             Create Price Alert

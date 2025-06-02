@@ -418,10 +418,10 @@ const CropsPrice = () => {
               filteredCrops.map((crop) => (
                 <div
                   key={crop.id}
-                  className="group bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all duration-300"
+                  className="group bg-white dark:bg-gray-900 rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 w-full max-w-full"
                 >
                   {/* Image Section with View Button */}
-                  <div className="relative aspect-video overflow-hidden">
+                  <div className="relative aspect-video overflow-hidden w-full max-w-full">
                     <img
                       src={crop.image}
                       alt={crop.name}
@@ -443,19 +443,19 @@ const CropsPrice = () => {
                   </div>
 
                   {/* Content Section */}
-                  <div className="p-5">
-                    <div className="flex justify-between items-start mb-3">
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  <div className="p-5 w-full max-w-full">
+                    <div className="flex justify-between items-start mb-3 w-full max-w-full">
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white truncate max-w-[70%]">
                         {crop.name}
                       </h3>
-                      <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900/50 dark:text-green-200">
+                      <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900/50 dark:text-green-200 whitespace-nowrap">
                         {crop.category}
                       </span>
                     </div>
 
                     {/* Price Section */}
-                    <div className="mb-4">
-                      <div className="flex items-baseline gap-2 mb-1">
+                    <div className="mb-4 w-full max-w-full">
+                      <div className="flex items-baseline gap-2 mb-1 flex-wrap w-full max-w-full">
                         <span className="text-2xl font-extrabold text-green-600 dark:text-green-400">
                           ₦{crop.priceRange[0].toLocaleString()}
                         </span>
@@ -463,15 +463,15 @@ const CropsPrice = () => {
                         <span className="text-2xl font-extrabold text-green-600 dark:text-green-400">
                           ₦{crop.priceRange[1].toLocaleString()}
                         </span>
-                        <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">
+                        <span className="text-sm text-gray-500 dark:text-gray-400 ml-1 whitespace-nowrap">
                           /{crop.unit}
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center justify-between w-full max-w-full">
+                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 min-w-0">
                           <AlertCircle className="h-4 w-4 mr-1 text-yellow-500" />
-                          Updated {crop.lastUpdated}
+                          <span className="truncate">{crop.lastUpdated}</span>
                         </div>
 
                         <span
@@ -487,7 +487,7 @@ const CropsPrice = () => {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 w-full max-w-full flex-wrap">
                       <Button
                         onClick={() => setSelectedCrop(crop)}
                         className="flex-1 text-white bg-gradient-to-r from-green-500 to-green-500 hover:from-green-500 hover:to-green-600 transition-all shadow-md"
