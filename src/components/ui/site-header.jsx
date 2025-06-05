@@ -4,16 +4,23 @@ import { Separator } from "../../components/ui/separator";
 import { SidebarTrigger } from "../../components/ui/sidebar";
 import { Input } from "../../components/ui/input";
 import { Search, X } from "lucide-react";
+import profileImage from "../../assets/images/ProfileSettingImg/Profile-image.png";
+import headerBg from "../../assets/images/siteHeader-img.png"; // adjust path and filename
 
 export function SiteHeader({ user }) {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const fallbackAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-    user?.name || "Guest"
-  )}&background=0D8ABC&color=fff&rounded=true&size=64`;
 
   return (
-    <header className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-16 flex h-16 shrink-0 items-center border-b bg-white">
-      {/* Mobile Search Modal */}
+    <header
+      className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-16 flex h-16 shrink-0 items-center border-b z-40 sticky top-0 bg-cover bg-center"
+      style={{
+        backgroundImage: `url(${headerBg})`,
+      }}
+    >
+      {/* Overlay to darken/lighten the header background */}
+      <div className="absolute inset-0 bg-white/20 backdrop-blur-sm pointer-events-none z-0" />
+      {/* You can use bg-black/40 or bg-white/80 depending on your design */}
+
       <Dialog
         open={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
@@ -42,7 +49,7 @@ export function SiteHeader({ user }) {
         </div>
       </Dialog>
 
-      <div className="flex w-full items-center justify-between px-4 lg:px-6">
+      <div className="relative w-full flex items-center justify-between px-4 lg:px-6 z-10">
         {/* Left Section */}
         <div className="flex items-center gap-4">
           <SidebarTrigger className="h-9 w-9 p-1.5 hover:bg-gray-100 rounded-lg" />
@@ -50,8 +57,8 @@ export function SiteHeader({ user }) {
             orientation="vertical"
             className="h-6 w-[1px] bg-gray-200"
           />
-          <h1 className="text-lg font-semibold text-gray-900">
-            Farmer Dashboard
+          <h1 className="text-sm md:text-lg font-semibold text-gray-700">
+            Welcome {user?.name || "User"}!
           </h1>
         </div>
 
@@ -76,19 +83,35 @@ export function SiteHeader({ user }) {
             <Search className="h-5 w-5 text-gray-600" />
           </button>
 
-          <div className="hidden md:block text-right">
-            <p className="text-sm font-medium text-gray-900">
-              {user?.name || "Guest"}
-            </p>
-            <p className="text-xs text-gray-500">
-              {user?.email || "farmer@example.com"}
-            </p>
+          <div className="flex items-center space-x-4">
+            <button className="relative p-2 rounded-full hover:bg-green-100 transition-colors">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-gray-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                />
+              </svg>
+              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+            <div className="flex items-center space-x-2 px-4 py-2">
+              <img
+                src={user?.profileImage || profileImage}
+                alt="Profile"
+                className="w-8 h-8 rounded-full object-cover border-2 border-dashed bg-gray-200"
+              />
+              <span className="text-sm md:text-lg font-semibold text-gray-700">
+                {user?.name || "User"}
+              </span>
+            </div>
           </div>
-          <img
-            src={user?.avatar || fallbackAvatar}
-            alt="User avatar"
-            className="w-10 h-10 rounded-full object-cover border-2 border-green-200"
-          />
         </div>
       </div>
     </header>

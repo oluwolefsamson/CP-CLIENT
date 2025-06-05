@@ -12,6 +12,7 @@ import {
   LogOutIcon,
   ArrowUpCircleIcon,
   Search,
+  X,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 
@@ -96,20 +97,31 @@ const data = {
 };
 
 export function AppSidebar(props) {
-  const { state } = useSidebar();
+  const { state, setState, openMobile, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
+  // Detect mobile screen
+  const [isMobile, setIsMobile] = React.useState(
+    typeof window !== "undefined" ? window.innerWidth < 768 : false
+  );
+
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <Sidebar collapsible="icon" {...props} className="flex flex-col h-screen">
       <SidebarHeader className="!items-start">
         <SidebarMenu
           className={cn(
-            "flex flex-col items-center gap-5 lg:gap-5 w-full",
-            collapsed ? "px-1 py-2" : "px-4 py-4"
+            "flex flex-col items-center gap-3 lg:gap-3 w-full", // reduce gap
+            collapsed ? "px-1 py-2" : "px-3 py-3" // reduce padding
           )}
         >
           <div
             className={cn(
-              "flex items-center gap-3 w-full",
+              "flex items-center gap-2 w-full", // reduce gap
               collapsed ? "justify-center" : "justify-start"
             )}
           >
@@ -118,21 +130,30 @@ export function AppSidebar(props) {
               alt="Logo"
               className={cn(
                 "rounded-full border-2 border-green-600 transition-all",
-                collapsed ? "h-8 w-8" : "h-10 w-10"
+                collapsed ? "h-6 w-6" : "h-8 w-8" // smaller logo
               )}
             />
             {!collapsed && (
               <div
-                className="text-3xl font-black text-green-600"
+                className="text-xl font-black text-green-600" // smaller brand text
                 style={{ fontFamily: "'Poiret One', cursive" }}
               >
                 CropWise
               </div>
             )}
+            {/* Cancel button for mobile */}
+            {!collapsed && isMobile && openMobile && (
+              <button
+                className="ml-auto p-1 rounded-full bg-gray-200 hover:bg-gray-200 transition-colors"
+                onClick={() => setOpenMobile(false)}
+                aria-label="Close sidebar"
+              >
+                <X className="h-6 w-6 text-gray-600" />
+              </button>
+            )}
           </div>
 
           <div className="flex items-center justify-center w-full">
-            {" "}
             {collapsed ? (
               <div className="flex items-center justify-center w-10 h-10 p-2 rounded-md bg-gray-200 hover:bg-gray-300 transition-colors duration-200">
                 <Search className="h-5 w-5 text-gray-500" />
@@ -144,6 +165,7 @@ export function AppSidebar(props) {
                   type="text"
                   placeholder="Search"
                   className="w-full pl-9 py-2 rounded-full bg-purple-100 text-purple-600 placeholder:text-purple-400 shadow-sm border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                  disabled
                 />
               </div>
             )}
@@ -152,11 +174,19 @@ export function AppSidebar(props) {
       </SidebarHeader>
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <SidebarContent className="text-gray-700 flex flex-col h-full no-scrollbar overflow-y-auto">
+        <SidebarContent className="text-gray-700 flex flex-col h-full no-scrollbar overflow-y-auto text-sm">
           <div className="flex flex-col flex-1 min-h-0">
-            <NavMain items={data.navMain} />
-            <div className="mt-4 flex-1 min-h-0">
-              <NavSecondary items={data.navSecondary} />
+            <NavMain
+              items={data.navMain}
+              iconClassName="h-4 w-4"
+              textClassName="text-sm"
+            />
+            <div className="mt-2 flex-1 min-h-0">
+              <NavSecondary
+                items={data.navSecondary}
+                iconClassName="h-4 w-4"
+                textClassName="text-sm"
+              />
             </div>
           </div>
         </SidebarContent>

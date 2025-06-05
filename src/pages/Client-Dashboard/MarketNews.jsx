@@ -11,6 +11,7 @@ import cheeseProduction from "../../assets/images/MarketNewsImg/cheese-productio
 import organicGrains from "../../assets/images/MarketNewsImg/organic-grains.jpg";
 import poultryFarm from "../../assets/images/MarketNewsImg/poultry-farm.jpg";
 import riceField from "../../assets/images/MarketNewsImg/rice-field.jpg";
+import { Skeleton } from "../../components/ui/skeleton";
 
 const MarketNews = () => {
   const [activeCategory, setActiveCategory] = useState("all");
@@ -212,6 +213,148 @@ const MarketNews = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [activeCategory, searchQuery]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4 md:p-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Page Header Skeleton */}
+          <header className="mb-10">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6">
+              <div>
+                <Skeleton className="h-10 w-64 mb-2" />
+                <Skeleton className="h-5 w-80" />
+              </div>
+              <div className="mt-4 md:mt-0 w-full md:w-auto">
+                <Skeleton className="h-12 w-80 rounded-lg" />
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {Array.from({ length: 7 }).map((_, i) => (
+                <Skeleton key={i} className="h-8 w-28 rounded-full" />
+              ))}
+            </div>
+          </header>
+
+          {/* Stats Bar Skeleton */}
+          <div className="bg-gray-700 text-white rounded-xl p-5 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="text-center p-3">
+                  <Skeleton className="h-8 w-16 mx-auto mb-2" />
+                  <Skeleton className="h-4 w-20 mx-auto" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Featured News Banner Skeleton */}
+          <div className="bg-gradient-to-r from-green-800 to-gray-900 rounded-2xl p-6 mb-10 text-white relative overflow-hidden">
+            <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center">
+              <div className="max-w-2xl w-full">
+                <Skeleton className="h-6 w-32 mb-3" />
+                <Skeleton className="h-8 w-96 mb-3" />
+                <Skeleton className="h-4 w-80 mb-4" />
+                <Skeleton className="h-10 w-40 rounded-lg" />
+              </div>
+              <div className="mt-6 md:mt-0">
+                <Skeleton className="h-48 w-48 rounded-xl" />
+              </div>
+            </div>
+          </div>
+
+          {/* Trending News Skeleton */}
+          <section className="mb-12">
+            <div className="flex justify-between items-center mb-6">
+              <Skeleton className="h-7 w-40" />
+              <Skeleton className="h-6 w-32" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="bg-white rounded-xl shadow border border-gray-200 overflow-hidden"
+                >
+                  <Skeleton className="h-48 w-full" />
+                  <div className="p-5">
+                    <div className="flex justify-between mb-4">
+                      <Skeleton className="h-6 w-1/4" />
+                      <Skeleton className="h-4 w-1/4" />
+                    </div>
+                    <Skeleton className="h-5 w-3/4 mb-3" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-5/6" />
+                      <Skeleton className="h-4 w-3/4" />
+                    </div>
+                    <div className="flex justify-between mt-6">
+                      <Skeleton className="h-4 w-1/4" />
+                      <Skeleton className="h-4 w-1/4" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* All News Skeleton */}
+          <section>
+            <div className="flex justify-between items-center mb-6">
+              <Skeleton className="h-7 w-60" />
+              <Skeleton className="h-10 w-32 rounded-lg" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="bg-white rounded-xl shadow border border-gray-200 overflow-hidden"
+                >
+                  <Skeleton className="h-48 w-full" />
+                  <div className="p-5">
+                    <div className="flex justify-between mb-4">
+                      <Skeleton className="h-6 w-1/4" />
+                      <Skeleton className="h-4 w-1/4" />
+                    </div>
+                    <Skeleton className="h-5 w-3/4 mb-3" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-5/6" />
+                      <Skeleton className="h-4 w-3/4" />
+                    </div>
+                    <div className="flex justify-between mt-6">
+                      <Skeleton className="h-4 w-1/4" />
+                      <Skeleton className="h-4 w-1/4" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Pagination Skeleton */}
+            <div className="flex justify-center mt-12">
+              <div className="inline-flex items-center space-x-2">
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={i} className="h-10 w-10 rounded-lg" />
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Newsletter Signup Skeleton */}
+          <div className="mt-16 bg-gradient-to-r from-green-500 to-gray-500 rounded-2xl p-8 text-white relative overflow-hidden">
+            <div className="relative z-10 max-w-3xl mx-auto text-center">
+              <Skeleton className="h-8 w-80 mx-auto mb-3" />
+              <Skeleton className="h-5 w-96 mx-auto mb-6" />
+              <div className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
+                <Skeleton className="h-12 w-full rounded-lg" />
+                <Skeleton className="h-12 w-40 rounded-lg" />
+              </div>
+              <Skeleton className="h-4 w-64 mx-auto mt-4" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 p-4 md:p-8">

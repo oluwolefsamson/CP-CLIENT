@@ -1,40 +1,183 @@
-import React from "react";
+import React, { useRef, useState } from "react";
+import { Skeleton } from "../../components/ui/skeleton";
+import defaultProfile from "../../assets/images/ProfileSettingImg/Profile-image.png";
+
+const navItems = [
+  {
+    id: "personal",
+    icon: "user",
+    label: "Personal Information",
+    active: true,
+  },
+  {
+    id: "farm",
+    icon: "tractor",
+    label: "Farm Details",
+  },
+  {
+    id: "location",
+    icon: "location",
+    label: "Farm Location",
+  },
+  {
+    id: "security",
+    icon: "lock",
+    label: "Security Settings",
+  },
+  {
+    id: "payment",
+    icon: "credit-card",
+    label: "Payment Methods",
+  },
+  {
+    id: "notifications",
+    icon: "bell",
+    label: "Notifications",
+  },
+  {
+    id: "connections",
+    icon: "link",
+    label: "Connected Services",
+  },
+  {
+    id: "preferences",
+    icon: "settings",
+    label: "Preferences",
+  },
+];
 
 const ProfileSetting = () => {
-  return (
-    <div className="min-h-screen  p-4 md:p-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-          <div className="mb-4 md:mb-0">
-            <div className="flex items-center"></div>
-          </div>
-          <div className="flex items-center space-x-4">
-            <button className="relative p-2 rounded-full hover:bg-green-100 transition-colors">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-gray-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                />
-              </svg>
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
-            <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
-              <div className="bg-gray-200 border-2 border-dashed rounded-xl w-8 h-8" />
-              <span className="font-medium text-gray-700">
-                Marcus Greenfield
-              </span>
+  const [profileImage, setProfileImage] = useState(defaultProfile);
+  const [fullName, setFullName] = useState("Oluwole Samson");
+  const fileInputRef = useRef(null);
+  const [loading, setLoading] = useState(true);
+
+  // Simulate loading
+  React.useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1200);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Handle file upload and preview
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (ev) => setProfileImage(ev.target.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Trigger file input clickS
+  const triggerFileInput = () => {
+    fileInputRef.current.click();
+  };
+
+  // Remove image (reset to default)
+  const handleRemoveImage = () => {
+    setProfileImage(defaultProfile);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen p-4 md:p-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Sidebar Skeleton */}
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                <div className="flex flex-col items-center mb-6">
+                  <Skeleton className="w-24 h-24 rounded-full mb-4" />
+                  <Skeleton className="h-6 w-32 mb-2" />
+                  <Skeleton className="h-4 w-20 mb-2" />
+                  <Skeleton className="h-6 w-28 mb-2" />
+                </div>
+                <div className="border-t border-gray-200 pt-4">
+                  <Skeleton className="h-5 w-32 mb-3" />
+                  <div className="space-y-2">
+                    {[...Array(8)].map((_, i) => (
+                      <Skeleton key={i} className="h-8 w-full rounded-xl" />
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <Skeleton className="h-5 w-32 mb-3" />
+                  <div className="space-y-2">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="flex justify-between">
+                        <Skeleton className="h-4 w-20" />
+                        <Skeleton className="h-4 w-16" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* Main Content Skeleton */}
+            <div className="lg:col-span-3 space-y-6">
+              <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                <Skeleton className="h-8 w-48 mb-2" />
+                <Skeleton className="h-4 w-64" />
+              </div>
+              <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                <Skeleton className="h-6 w-32 mb-4" />
+                <div className="flex flex-col md:flex-row items-center gap-6">
+                  <Skeleton className="w-32 h-32 rounded-xl" />
+                  <div className="flex-1 space-y-3">
+                    <Skeleton className="h-4 w-48" />
+                    <div className="flex space-x-3">
+                      <Skeleton className="h-10 w-32 rounded-lg" />
+                      <Skeleton className="h-10 w-24 rounded-lg" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                <Skeleton className="h-6 w-40 mb-4" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="space-y-2">
+                      <Skeleton className="h-4 w-24 mb-1" />
+                      <Skeleton className="h-10 w-full rounded-lg" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+                <Skeleton className="h-6 w-40 mb-4" />
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
+                    >
+                      <div>
+                        <Skeleton className="h-5 w-24 mb-2" />
+                        <Skeleton className="h-4 w-32" />
+                      </div>
+                      <Skeleton className="h-10 w-32 rounded-lg" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex flex-col sm:flex-row justify-between gap-4">
+                <Skeleton className="h-12 w-40 rounded-lg" />
+                <div className="flex space-x-3">
+                  <Skeleton className="h-12 w-40 rounded-lg" />
+                </div>
+              </div>
             </div>
           </div>
-        </header>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen p-4 md:p-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Left Sidebar - User Profile Navigation */}
@@ -42,8 +185,16 @@ const ProfileSetting = () => {
             <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
               <div className="flex flex-col items-center mb-6">
                 <div className="relative mb-4">
-                  <div className="bg-gray-200 border-2 border-dashed rounded-full w-24 h-24 mx-auto" />
-                  <button className="absolute bottom-1 right-1 bg-green-600 text-white p-2 rounded-full hover:bg-green-700 transition-colors">
+                  <img
+                    src={profileImage}
+                    alt="Profile"
+                    className="w-24 h-24 rounded-full object-cover border-2 border-dashed bg-gray-200 mx-auto"
+                  />
+                  <button
+                    className="absolute bottom-1 right-1 bg-green-600 text-white p-2 rounded-full hover:bg-green-700 transition-colors"
+                    onClick={triggerFileInput}
+                    type="button"
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-4 w-4"
@@ -65,11 +216,18 @@ const ProfileSetting = () => {
                       />
                     </svg>
                   </button>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
                 </div>
                 <h3 className="font-bold text-lg text-gray-800">
-                  Marcus Greenfield
+                  Oluwole Samson
                 </h3>
-                <p className="text-gray-500 text-sm mt-1">Farm Owner</p>
+                <p className="text-gray-500 text-sm mt-1">User Profile</p>
                 <div className="mt-3 flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -94,48 +252,10 @@ const ProfileSetting = () => {
                   Profile Settings
                 </h3>
                 <nav className="space-y-1">
-                  {[
-                    {
-                      id: "personal",
-                      icon: "user",
-                      label: "Personal Information",
-                      active: true,
-                    },
-                    { id: "farm", icon: "tractor", label: "Farm Details" },
-                    {
-                      id: "location",
-                      icon: "location",
-                      label: "Farm Location",
-                    },
-                    {
-                      id: "security",
-                      icon: "lock",
-                      label: "Security Settings",
-                    },
-                    {
-                      id: "payment",
-                      icon: "credit-card",
-                      label: "Payment Methods",
-                    },
-                    {
-                      id: "notifications",
-                      icon: "bell",
-                      label: "Notifications",
-                    },
-                    {
-                      id: "connections",
-                      icon: "link",
-                      label: "Connected Services",
-                    },
-                    {
-                      id: "preferences",
-                      icon: "settings",
-                      label: "Preferences",
-                    },
-                  ].map((item) => (
+                  {navItems.map((item) => (
                     <button
                       key={item.id}
-                      className={`w-full flex items-center py-3 px-4 rounded-xl transition-colors ${
+                      className={`w-full flex items-center text-sm py-3 px-4 rounded-xl transition-colors ${
                         item.active
                           ? "bg-green-50 text-green-700 font-medium"
                           : "text-gray-600 hover:bg-gray-50"
@@ -286,6 +406,26 @@ const ProfileSetting = () => {
                       <span>{item.label}</span>
                     </button>
                   ))}
+
+                  <button className="w-full flex items-center py-3 px-4 rounded-xl transition-colors text-gray-600 hover:bg-gray-50">
+                    <span className="mr-3">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                        />
+                      </svg>
+                    </span>
+                    <span>Logout</span>
+                  </button>
                 </nav>
               </div>
 
@@ -331,8 +471,16 @@ const ProfileSetting = () => {
               </h3>
               <div className="flex flex-col md:flex-row items-center gap-6">
                 <div className="relative">
-                  <div className="bg-gray-200 border-2 border-dashed rounded-xl w-32 h-32" />
-                  <button className="absolute bottom-0 right-0 bg-green-600 text-white p-2 rounded-full hover:bg-green-700 transition-colors">
+                  <img
+                    src={profileImage}
+                    alt="Profile"
+                    className="w-32 h-32 rounded-xl object-cover border-2 border-dashed bg-gray-200"
+                  />
+                  <button
+                    className="absolute bottom-0 right-0 bg-green-600 text-white p-2 rounded-full hover:bg-green-700 transition-colors"
+                    onClick={triggerFileInput}
+                    type="button"
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-4 w-4"
@@ -354,16 +502,31 @@ const ProfileSetting = () => {
                       />
                     </svg>
                   </button>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputRef}
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
                 </div>
                 <div>
                   <p className="text-gray-600 text-sm mb-3">
                     At least 800×800 px recommended. JPG or PNG is allowed
                   </p>
                   <div className="flex space-x-3">
-                    <button className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors text-sm font-medium">
+                    <button
+                      className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-colors text-sm font-medium"
+                      onClick={triggerFileInput}
+                      type="button"
+                    >
                       Upload New Photo
                     </button>
-                    <button className="border border-gray-300 hover:bg-gray-50 text-gray-700 py-2 px-4 rounded-lg transition-colors text-sm font-medium">
+                    <button
+                      className="border border-gray-300 hover:bg-gray-50 text-gray-700 py-2 px-4 rounded-lg transition-colors text-sm font-medium"
+                      onClick={handleRemoveImage}
+                      type="button"
+                    >
                       Remove
                     </button>
                   </div>
@@ -385,7 +548,8 @@ const ProfileSetting = () => {
                     <input
                       type="text"
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500 outline-none transition"
-                      value="Marcus Greenfield"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
                     />
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                       <svg
@@ -413,7 +577,7 @@ const ProfileSetting = () => {
                     <input
                       type="email"
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500 outline-none transition"
-                      value="marcus@greenfieldfarms.co"
+                      value="oluwolefsamson44@gmail.com"
                     />
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                       <svg
@@ -441,7 +605,7 @@ const ProfileSetting = () => {
                     <input
                       type="tel"
                       className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-200 focus:border-green-500 outline-none transition"
-                      value="(555) 123-4567"
+                      value="+234 903 123 4567"
                     />
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                       <svg
@@ -494,7 +658,7 @@ const ProfileSetting = () => {
             </div>
 
             {/* Farm Details Section */}
-            <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
+            {/* <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
                 Farm Details
               </h3>
@@ -561,7 +725,7 @@ const ProfileSetting = () => {
                   />
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Security Section */}
             <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">

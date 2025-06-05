@@ -45,6 +45,7 @@ import {
   Trash2,
   Maximize2,
 } from "lucide-react";
+import { Skeleton } from "../../components/ui/skeleton";
 
 // Custom scrollbar styles (tiny and gray)
 const customScrollbarStyles = `
@@ -226,6 +227,13 @@ const SubmitPrice = () => {
   const [recentSubmissions, setRecentSubmissions] = useState([]);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [currentImage, setCurrentImage] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Simulate loading for 1.5s
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1500);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Load sample recent submissions
   useEffect(() => {
@@ -304,6 +312,85 @@ const SubmitPrice = () => {
       closeImageModal();
     }
   }, [open]);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen p-4 md:p-8 max-w-6xl mx-auto">
+        {/* Hero Skeleton */}
+        <div className="text-center py-12 px-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl mb-12 border">
+          <Skeleton className="mx-auto h-10 w-2/3 mb-4" />
+          <Skeleton className="mx-auto h-6 w-1/2 mb-8" />
+          <Skeleton className="mx-auto h-12 w-48 rounded-lg" />
+        </div>
+
+        {/* Features Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="p-6">
+              <Skeleton className="mx-auto h-12 w-12 rounded-full mb-4" />
+              <Skeleton className="h-6 w-2/3 mx-auto mb-2" />
+              <Skeleton className="h-4 w-full mx-auto" />
+            </div>
+          ))}
+        </div>
+
+        {/* How It Works Skeleton */}
+        <div className="mb-16">
+          <Skeleton className="h-8 w-1/3 mx-auto mb-6" />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="p-6">
+                <Skeleton className="mx-auto h-10 w-10 rounded-full mb-4" />
+                <Skeleton className="h-5 w-1/2 mx-auto mb-2" />
+                <Skeleton className="h-4 w-full mx-auto" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Recent Submissions & Benefits Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div>
+            <Skeleton className="h-7 w-1/3 mb-2" />
+            <Skeleton className="h-4 w-1/2 mb-4" />
+            {[...Array(4)].map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between p-3 mb-2"
+              >
+                <Skeleton className="h-12 w-12 rounded-lg mr-4" />
+                <div className="flex-1">
+                  <Skeleton className="h-4 w-24 mb-1" />
+                  <Skeleton className="h-3 w-16" />
+                </div>
+                <Skeleton className="h-4 w-16 ml-4" />
+              </div>
+            ))}
+          </div>
+          <div>
+            <Skeleton className="h-7 w-1/2 mb-4" />
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-center mb-3">
+                <Skeleton className="h-5 w-5 rounded-full mr-2" />
+                <Skeleton className="h-4 w-2/3" />
+              </div>
+            ))}
+            <div className="mt-8 text-center">
+              <Skeleton className="mx-auto h-10 w-40 rounded-lg mb-2" />
+              <Skeleton className="h-4 w-1/2 mx-auto" />
+            </div>
+          </div>
+        </div>
+
+        {/* Call to Action Skeleton */}
+        <div className="mt-16 text-center py-12 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border">
+          <Skeleton className="mx-auto h-8 w-1/3 mb-4" />
+          <Skeleton className="mx-auto h-5 w-1/2 mb-8" />
+          <Skeleton className="mx-auto h-12 w-48 rounded-lg" />
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen p-4 md:p-8 max-w-6xl mx-auto">

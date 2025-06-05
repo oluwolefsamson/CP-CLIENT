@@ -445,7 +445,7 @@ const CropsPrice = () => {
                   {/* Content Section */}
                   <div className="p-5 w-full max-w-full">
                     <div className="flex justify-between items-start mb-3 w-full max-w-full">
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white truncate max-w-[70%]">
+                      <h3 className="text-base font-semibold text-gray-900 dark:text-white truncate max-w-[70%]">
                         {crop.name}
                       </h3>
                       <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-green-900/50 dark:text-green-200 whitespace-nowrap">
@@ -456,26 +456,26 @@ const CropsPrice = () => {
                     {/* Price Section */}
                     <div className="mb-4 w-full max-w-full">
                       <div className="flex items-baseline gap-2 mb-1 flex-wrap w-full max-w-full">
-                        <span className="text-2xl font-extrabold text-green-600 dark:text-green-400">
+                        <span className="text-base font-bold text-green-600 dark:text-green-400">
                           ₦{crop.priceRange[0].toLocaleString()}
                         </span>
                         <span className="text-gray-400">-</span>
-                        <span className="text-2xl font-extrabold text-green-600 dark:text-green-400">
+                        <span className="text-base font-bold text-green-600 dark:text-green-400">
                           ₦{crop.priceRange[1].toLocaleString()}
                         </span>
-                        <span className="text-sm text-gray-500 dark:text-gray-400 ml-1 whitespace-nowrap">
+                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-1 whitespace-nowrap">
                           /{crop.unit}
                         </span>
                       </div>
 
                       <div className="flex items-center justify-between w-full max-w-full">
-                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 min-w-0">
-                          <AlertCircle className="h-4 w-4 mr-1 text-yellow-500" />
+                        <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 min-w-0">
+                          <AlertCircle className="h-3 w-3 mr-1 text-yellow-500" />
                           <span className="truncate">{crop.lastUpdated}</span>
                         </div>
 
                         <span
-                          className={`text-sm font-semibold px-2 py-0.5 rounded-full ${
+                          className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                             crop.trend.startsWith("+")
                               ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
                               : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
@@ -490,7 +490,7 @@ const CropsPrice = () => {
                     <div className="flex gap-2 w-full max-w-full flex-wrap">
                       <Button
                         onClick={() => setSelectedCrop(crop)}
-                        className="flex-1 text-white bg-gradient-to-r from-green-500 to-green-500 hover:from-green-500 hover:to-green-600 transition-all shadow-md"
+                        className="flex-1 text-xs font-medium text-white bg-gradient-to-r from-green-500 to-green-500 hover:from-green-500 hover:to-green-600 transition-all shadow-md py-1.5 h-8"
                       >
                         <TrendingUp className="h-4 w-4 mr-2 text-white" />
                         View Trends
@@ -498,7 +498,7 @@ const CropsPrice = () => {
 
                       <Button
                         variant="outline"
-                        className="px-3 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+                        className="px-2 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 text-xs py-1.5 h-8"
                         onClick={(e) => {
                           e.stopPropagation();
                           console.log("Bookmarked:", crop.name);
@@ -509,7 +509,7 @@ const CropsPrice = () => {
 
                       <Button
                         variant="outline"
-                        className="px-3 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+                        className="px-2 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 text-xs py-1.5 h-8"
                         onClick={(e) => {
                           e.stopPropagation();
                           console.log("Shared:", crop.name);
