@@ -3,11 +3,13 @@ import { NavLink } from "react-router-dom";
 import { BiMenu } from "react-icons/bi";
 import CropWiseLogo from "../Logo/logo";
 import OnboardingSlider from "../OnboardingSlider/OnboardingSlider";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "../../LanguageSwitcher"; // Adjust path if needed
 
 const navlinks = [
-  { path: "/", display: "Track Prices" },
-  { path: "/", display: "Compare Products" },
-  { path: "/", display: "Contact Us" },
+  { path: "/", key: "trackPrices" },
+  { path: "/", key: "compareProducts" },
+  { path: "/", key: "contactUs" },
 ];
 
 const Header = () => {
@@ -15,21 +17,21 @@ const Header = () => {
   const [isSliderOpen, setIsSliderOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
+  const { t } = useTranslation();
+
   const handleStickyHeader = () => {
-    window.addEventListener("scroll", () => {
-      if (
-        document.body.scrollTop > 80 ||
-        document.documentElement.scrollTop > 80
-      ) {
-        headerRef.current.classList.add("sticky__header");
-      } else {
-        headerRef.current.classList.remove("sticky__header");
-      }
-    });
+    if (
+      document.body.scrollTop > 80 ||
+      document.documentElement.scrollTop > 80
+    ) {
+      headerRef.current.classList.add("sticky__header");
+    } else {
+      headerRef.current.classList.remove("sticky__header");
+    }
   };
 
   useEffect(() => {
-    handleStickyHeader();
+    window.addEventListener("scroll", handleStickyHeader);
     return () => window.removeEventListener("scroll", handleStickyHeader);
   }, []);
 
@@ -44,7 +46,7 @@ const Header = () => {
             <CropWiseLogo />
 
             {/* Desktop Navigation */}
-            <div className="navigation hidden md:block">
+            <div className="navigation hidden md:flex items-center gap-6">
               <ul className="menu flex items-center gap-[2.7rem]">
                 {navlinks.map((link, index) => (
                   <li key={index}>
@@ -56,11 +58,14 @@ const Header = () => {
                           : "text-textColor text-[16px] leading-7 font-[500] hover:text-primaryColor"
                       }
                     >
-                      {link.display}
+                      {t(link.key)}
                     </NavLink>
                   </li>
                 ))}
               </ul>
+
+              {/* Language Switcher with shadcn Dropdown */}
+              <LanguageSwitcher />
             </div>
 
             <div className="flex items-center gap-4">
@@ -68,7 +73,7 @@ const Header = () => {
                 onClick={() => setIsSliderOpen(true)}
                 className="bg-primaryColor py-2 px-6 text-white font-[600] h-[44px] flex items-center justify-center rounded-[50px] hover:bg-primaryColorDark transition-colors"
               >
-                Login
+                {t("login")}
               </button>
 
               {/* Hamburger icon for mobile */}
@@ -90,7 +95,7 @@ const Header = () => {
         <div
           className="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden"
           onClick={closeDrawer}
-        ></div>
+        />
       )}
 
       {/* Bottom Drawer */}
@@ -121,10 +126,14 @@ const Header = () => {
                   }
                   onClick={closeDrawer}
                 >
-                  {link.display}
+                  {t(link.key)}
                 </NavLink>
               </li>
             ))}
+            {/* Language Switcher in drawer */}
+            <li>
+              <LanguageSwitcher />
+            </li>
           </ul>
         </div>
       </div>

@@ -1,0 +1,17 @@
+{
+  "trackPrices": "Tẹle Awọn Owo",
+  "compareProducts": "Fi Awọn Ọja We Ara Wọn",
+  "contactUs": "Kan si Wa",
+  "login": "Wọlé",
+  "hero": {
+    "title": {
+      "line1": "Fipamọ Owo,",
+      "line2": "Wa Ní Imọ̀lára"
+    },
+    "subtitle": "Oluyẹwo owo wa n ṣe iranlọwọ fun ọ lati mọ awọn ayipada owo ati gba awọn ipese to dara julọ lati jẹ ki o ra ni oye.",
+    "buttons": {
+      "trackPrices": "Tẹle Awọn Owo",
+      "learnMore": "Kọ́ Ọ̀pọ̀ Síi"
+    }
+  }
+}

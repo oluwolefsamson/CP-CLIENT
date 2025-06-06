@@ -1,0 +1,17 @@
+{
+  "trackPrices": "Nyocha Ahịa",
+  "compareProducts": "Tụnyere Ngwaahịa",
+  "contactUs": "Kpọtụrụ Anyị",
+  "login": "Banye",
+  "hero": {
+    "title": {
+      "line1": "Zọpụta Ego,",
+      "line2": "Nọrọ N’ịma Ozi"
+    },
+    "subtitle": "Ngwaọrụ anyị na-enyere gị aka iburu ụzọ hụ mgbanwe na ọnụahịa iji mee mkpebi zụta ziri ezi.",
+    "buttons": {
+      "trackPrices": "Nyocha Ahịa",
+      "learnMore": "Mụtakwuo"
+    }
+  }
+}

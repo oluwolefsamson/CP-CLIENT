@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import hero1 from "../../../assets/images/HeroImg/hero1.jpg";
 import hero2 from "../../../assets/images/HeroImg/hero2.jpg";
 import hero3 from "../../../assets/images/HeroImg/hero3.jpg";
@@ -12,32 +13,29 @@ import { Link } from "react-router-dom";
 import { LineShadowText } from "../../LandingPage/magicui/line-shadow-text";
 
 const Hero = () => {
+  const { t } = useTranslation();
+
   return (
     <section className="hero__section pt-[60px] 2xl:h-[800px]">
       <div className="container">
         <div className="flex flex-col lg:flex-row gap-[90px] items-center justify-between">
-          {/* Hero content */}
           <div>
             <div className="lg:w-[570px]">
-              <h1 className="text-4xl font-bold leading-snug sm:text-5xl lg:text-6xl">
-                Save Money,
-                <br />
-                <LineShadowText className="italic">Stay</LineShadowText>{" "}
-                <LineShadowText className="italic">Informed</LineShadowText>
+              <h1 className="text-4xl font-bold text-gray-800 leading-[3rem] sm:text-5xl lg:text-6xl">
+                <p>{t("hero.title.line1")}</p>
+                <p>{t("hero.title.line2")}</p>
               </h1>
 
-              <p className="text__para">
-                Our Price Tracker helps you stay updated on the best deals and
-                price changes across various products, empowering you to make
-                smart buying decisions.
-              </p>
+              <p className="text__para">{t("hero.subtitle")}</p>
 
               <div className="flex gap-3 items-center">
                 <Link to="/track-prices">
-                  <button className="hero_btn1">Track Prices</button>
+                  <button className="hero_btn1">{t("trackPrices")}</button>
                 </Link>
                 <Link to="/about">
-                  <button className="hero_btn2">Learn More</button>
+                  <button className="hero_btn2">
+                    {t("hero.buttons.learnMore")}
+                  </button>
                 </Link>
               </div>
 
@@ -69,14 +67,13 @@ const Hero = () => {
                   100+
                 </h2>
                 <span className="w-[100px] h-2 bg-primaryColor rounded-full block mt-[-14px]"></span>
-                <p className="text__para">Price Comparison </p>
+                <p className="text__para">Price Comparison</p>
               </div>
             </div>
           </div>
 
-          {/* Hero images with Particles Background */}
+          {/* Hero images */}
           <div className="relative flex gap-[20px] h-[400px] lg:h-[700px] justify-center items-center px-8">
-            {/* <ParticlesDemo /> */}
             <div className="relative z-10">
               <img src={hero1} alt="price image 1" className="w-full rounded" />
             </div>

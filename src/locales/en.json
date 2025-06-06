@@ -1,0 +1,17 @@
+{
+  "trackPrices": "Track Prices",
+  "compareProducts": "Compare Products",
+  "contactUs": "Contact Us",
+  "login": "Login",
+  "hero": {
+    "title": {
+      "line1": "Save Money,",
+      "line2": "Stay Informed"
+    },
+    "subtitle": "Our Price Tracker helps you stay updated on the best deals and price changes across various products, empowering you to make smart buying decisions.",
+    "buttons": {
+      "trackPrices": "Track Prices",
+      "learnMore": "Learn More"
+    }
+  }
+}
