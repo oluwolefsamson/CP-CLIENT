@@ -76,6 +76,12 @@ const data = {
       url: "/dashboard/market-news",
       icon: NewspaperIcon,
     },
+
+    {
+      title: "Dispute",
+      url: "/dashboard/dispute",
+      icon: ArrowUpCircleIcon,
+    },
   ],
   navSecondary: [
     {
@@ -83,11 +89,7 @@ const data = {
       url: "/dashboard/profile-setting",
       icon: UserIcon,
     },
-    {
-      title: "Language",
-      url: "/dashboard/language",
-      icon: LanguagesIcon,
-    },
+
     {
       title: "Logout",
       url: "/logout",
