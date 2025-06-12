@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-
 import About from "../../components/LandingPage/About/About";
 import faqImg from "../../../src/assets/images/faqs.jpeg";
 import FaqList from "../../components/LandingPage/Faq/FaqList";
@@ -127,7 +126,7 @@ const Home = () => {
       </section>
 
       {/* ChatSimple AI Chatbot */}
-      {/* <chat-bot
+      <chat-bot
         platform_id="7f9c4059-744b-471b-a7ce-a40664ca152d"
         user_id="494d6d1e-a30f-49cd-9bd7-91fb96399ee4"
         chatbot_id="0b89a0db-af54-42ea-aeeb-87c325948bad"
@@ -135,7 +134,7 @@ const Home = () => {
         <a href="https://www.chatsimple.ai/?utm_source=widget&utm_medium=referral">
           chatsimple
         </a>
-      </chat-bot> */}
+      </chat-bot>
     </>
   );
 };
