@@ -15,9 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
-
 import { Input } from "../../components/ui/input";
-
 import { NavMain } from "../../components/ui/nav-main";
 import { NavSecondary } from "../../components/ui/nav-secondary";
 import { NavUser } from "../../components/ui/nav-user";
@@ -32,6 +30,9 @@ import {
 } from "../../components/ui/sidebar";
 import { useSidebar } from "../../components/ui/sidebar";
 import LogoImg from "../../assets/images/logo.png";
+
+// Import Skeleton from shadcn/ui
+import { Skeleton } from "../../components/ui/skeleton";
 
 const data = {
   user: {
@@ -105,12 +106,82 @@ export function AppSidebar(props) {
   const [isMobile, setIsMobile] = React.useState(
     typeof window !== "undefined" ? window.innerWidth < 768 : false
   );
+  const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    const timer = setTimeout(() => setLoading(false), 1500);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      clearTimeout(timer);
+    };
   }, []);
+
+  if (loading) {
+    return (
+      <Sidebar collapsible="icon" {...props} className="flex flex-col h-screen">
+        <SidebarHeader className="!items-start">
+          <SidebarMenu
+            className={cn(
+              "flex flex-col items-center gap-3 lg:gap-3 w-full",
+              collapsed ? "px-1 py-2" : "px-3 py-3"
+            )}
+          >
+            <div
+              className={cn(
+                "flex items-center gap-2 w-full",
+                collapsed ? "justify-center" : "justify-start"
+              )}
+            >
+              <Skeleton
+                className={cn(
+                  collapsed ? "h-6 w-6" : "h-8 w-8",
+                  "rounded-full"
+                )}
+              />
+              {!collapsed && <Skeleton className="h-6 w-24 rounded" />}
+              {!collapsed && isMobile && openMobile && (
+                <Skeleton className="ml-auto h-8 w-8 rounded-full" />
+              )}
+            </div>
+            <div className="flex items-center justify-center w-full">
+              {collapsed ? (
+                <Skeleton className="w-10 h-10 rounded-md" />
+              ) : (
+                <Skeleton className="w-full h-10 rounded-full" />
+              )}
+            </div>
+          </SidebarMenu>
+        </SidebarHeader>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <SidebarContent className="text-gray-700 flex flex-col h-full no-scrollbar overflow-y-auto text-sm">
+            <div className="flex flex-col flex-1 min-h-0 gap-2 px-2 py-4">
+              <Skeleton className="w-full h-8 mb-2 rounded" />
+              <Skeleton className="w-full h-8 mb-2 rounded" />
+              <Skeleton className="w-full h-8 mb-2 rounded" />
+              <Skeleton className="w-full h-8 mb-2 rounded" />
+              <Skeleton className="w-full h-8 mb-2 rounded" />
+              <Skeleton className="w-full h-8 mb-2 rounded" />
+              <Skeleton className="w-full h-8 mb-2 rounded" />
+              <Skeleton className="w-full h-8 mb-2 rounded" />
+              <Skeleton className="w-full h-8 mb-2 rounded" />
+              <Skeleton className="w-full h-8 mb-2 rounded" />
+            </div>
+          </SidebarContent>
+        </div>
+        <SidebarFooter className="border-t border-sidebar-border px-4 py-4">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-10 w-10 rounded-full" />
+            <div className="flex flex-col gap-2 flex-1">
+              <Skeleton className="h-4 w-24 rounded" />
+              <Skeleton className="h-4 w-32 rounded" />
+            </div>
+          </div>
+        </SidebarFooter>
+      </Sidebar>
+    );
+  }
 
   return (
     <Sidebar collapsible="icon" {...props} className="flex flex-col h-screen">

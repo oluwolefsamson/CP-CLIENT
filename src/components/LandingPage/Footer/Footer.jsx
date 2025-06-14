@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { RiLinkedinFill } from "react-icons/ri";
 import {
@@ -7,6 +7,8 @@ import {
   AiOutlineInstagram,
 } from "react-icons/ai";
 import CropWiseLogo from "../Logo/logo";
+
+import { Skeleton } from "../../ui/skeleton";
 
 const socialLinks = [
   {
@@ -77,7 +79,53 @@ const quickLinks03 = [
 ];
 
 const Footer = () => {
+  const [loading, setLoading] = useState(true);
   const year = new Date().getFullYear();
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return (
+      <footer className="pb-16 pt-10">
+        <div className="container">
+          <div className="flex justify-between flex-col md:flex-row flex-wrap gap-[30px]">
+            <div>
+              <Skeleton className="w-[120px] h-[40px] rounded-lg mb-4" />
+              <Skeleton className="w-[220px] h-[20px] rounded mb-2" />
+              <div className="flex items-center gap-3 mt-4">
+                <Skeleton className="w-9 h-9 rounded-full" />
+                <Skeleton className="w-9 h-9 rounded-full" />
+                <Skeleton className="w-9 h-9 rounded-full" />
+                <Skeleton className="w-9 h-9 rounded-full" />
+              </div>
+            </div>
+            <div>
+              <Skeleton className="w-[120px] h-[28px] rounded mb-4" />
+              <Skeleton className="w-[120px] h-[20px] rounded mb-2" />
+              <Skeleton className="w-[120px] h-[20px] rounded mb-2" />
+              <Skeleton className="w-[120px] h-[20px] rounded mb-2" />
+              <Skeleton className="w-[120px] h-[20px] rounded mb-2" />
+            </div>
+            <div>
+              <Skeleton className="w-[120px] h-[28px] rounded mb-4" />
+              <Skeleton className="w-[120px] h-[20px] rounded mb-2" />
+              <Skeleton className="w-[120px] h-[20px] rounded mb-2" />
+              <Skeleton className="w-[120px] h-[20px] rounded mb-2" />
+              <Skeleton className="w-[120px] h-[20px] rounded mb-2" />
+            </div>
+            <div>
+              <Skeleton className="w-[120px] h-[28px] rounded mb-4" />
+              <Skeleton className="w-[120px] h-[20px] rounded mb-2" />
+              <Skeleton className="w-[120px] h-[20px] rounded mb-2" />
+            </div>
+          </div>
+        </div>
+      </footer>
+    );
+  }
 
   return (
     <footer className="pb-16 pt-10">

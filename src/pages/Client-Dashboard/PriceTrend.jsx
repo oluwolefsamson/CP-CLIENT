@@ -223,7 +223,7 @@ const PriceTrend = () => {
 
   return (
     <div className="w-full max-w-6xl mx-auto px-2 py-8">
-      <Card className="mb-6 bg-gray-50">
+      <Card className="mb-6 bg-white shadow-sm">
         <CardHeader>
           <CardTitle className="text-2xl">Price Trend Analysis</CardTitle>
           <CardDescription>
@@ -233,7 +233,7 @@ const PriceTrend = () => {
       </Card>
 
       {/* Filters Section */}
-      <Card className="mb-6 bg-gray-50">
+      <Card className="mb-6 bg-white shadow-sm">
         <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -247,7 +247,7 @@ const PriceTrend = () => {
               <SelectTrigger>
                 <SelectValue placeholder="Select crop" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white">
                 {mockCrops.map((crop) => (
                   <SelectItem key={crop.id} value={crop.id.toString()}>
                     {crop.name}
@@ -330,7 +330,7 @@ const PriceTrend = () => {
       </Card>
 
       {/* Date Range Picker */}
-      <Card className="mb-6 bg-gray-50">
+      <Card className="mb-6 bg-white shadow-sm">
         <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -401,7 +401,7 @@ const PriceTrend = () => {
       </Card>
 
       {/* Chart Area */}
-      <Card className="mb-6 bg-gray-50">
+      <Card className="mb-6 bg-white shadow-sm">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-lg font-semibold">
@@ -502,7 +502,7 @@ const PriceTrend = () => {
 
       {/* Statistics Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <Card className="bg-gray-100">
+        <Card className="bg-white shadow-sm">
           <CardHeader>
             <CardTitle className="text-sm font-medium text-gray-500">
               30-Day Change
@@ -517,7 +517,7 @@ const PriceTrend = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-gray-100">
+        <Card className="bg-white shadow-sm">
           <CardHeader>
             <CardTitle className="text-sm font-medium text-gray-500">
               Average Price
@@ -530,7 +530,7 @@ const PriceTrend = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-gray-100">
+        <Card className="bg-white shadow-sm">
           <CardHeader>
             <CardTitle className="text-sm font-medium text-gray-500">
               Price Volatility
@@ -541,7 +541,7 @@ const PriceTrend = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-gray-100">
+        <Card className="bg-white shadow-sm">
           <CardHeader>
             <CardTitle className="text-sm font-medium text-gray-500">
               7-Day Forecast

@@ -6,6 +6,9 @@ import OnboardingSlider from "../OnboardingSlider/OnboardingSlider";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../../LanguageSwitcher"; // Adjust path if needed
 
+// Import Skeleton from shadcn/ui
+import { Skeleton } from "../../ui/skeleton";
+
 const navlinks = [
   { path: "/", key: "trackPrices" },
   { path: "/", key: "compareProducts" },
@@ -16,6 +19,7 @@ const Header = () => {
   const headerRef = useRef(null);
   const [isSliderOpen, setIsSliderOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const { t } = useTranslation();
 
@@ -32,11 +36,36 @@ const Header = () => {
 
   useEffect(() => {
     window.addEventListener("scroll", handleStickyHeader);
-    return () => window.removeEventListener("scroll", handleStickyHeader);
+
+    const timer = setTimeout(() => setLoading(false), 1500);
+    return () => {
+      window.removeEventListener("scroll", handleStickyHeader);
+      clearTimeout(timer);
+    };
   }, []);
 
   const toggleDrawer = () => setIsDrawerOpen((prev) => !prev);
   const closeDrawer = () => setIsDrawerOpen(false);
+
+  if (loading) {
+    return (
+      <header className="header flex items-center" ref={headerRef}>
+        <div className="container">
+          <div className="flex items-center justify-between">
+            <Skeleton className="w-[120px] h-[40px] rounded-lg" />
+            <div className="hidden md:flex items-center gap-6">
+              <Skeleton className="w-[300px] h-[32px] rounded-lg" />
+              <Skeleton className="w-[40px] h-[32px] rounded-full" />
+            </div>
+            <div className="flex items-center gap-4">
+              <Skeleton className="w-[100px] h-[44px] rounded-full" />
+              <Skeleton className="w-6 h-6 rounded-full md:hidden" />
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <>

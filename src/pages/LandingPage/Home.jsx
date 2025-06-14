@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import About from "../../components/LandingPage/About/About";
 import faqImg from "../../../src/assets/images/faqs.jpeg";
 import FaqList from "../../components/LandingPage/Faq/FaqList";
@@ -9,18 +9,39 @@ import HomeSupplierList from "../../components/LandingPage/Supplier/HomeSupplier
 import ServiceList from "../../components/LandingPage/Services/ServiceList";
 import Billing from "../../components/LandingPage/Billing/Billing";
 import { Marquee3D } from "../../components/LandingPage/Marquee/Marquee";
+import { Skeleton } from "../../components/ui/skeleton";
 
 const Home = () => {
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
+    // Simulate loading for 1.5s
+    const timer = setTimeout(() => setLoading(false), 1500);
+
     const script = document.createElement("script");
     script.src = "https://cdn.chatsimple.ai/chat-bot-loader.js";
     script.defer = true;
     document.body.appendChild(script);
 
     return () => {
+      clearTimeout(timer);
       document.body.removeChild(script);
     };
   }, []);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto py-10 space-y-10">
+        <Skeleton className="w-full h-[200px] rounded-lg" />
+        <Skeleton className="w-full h-[120px] rounded-lg" />
+        <Skeleton className="w-full h-[120px] rounded-lg" />
+        <Skeleton className="w-full h-[120px] rounded-lg" />
+        <Skeleton className="w-full h-[120px] rounded-lg" />
+        <Skeleton className="w-full h-[350px] rounded-lg" />
+        <Skeleton className="w-full h-[120px] rounded-lg" />
+      </div>
+    );
+  }
 
   return (
     <>
