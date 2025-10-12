@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import About from "../../components/LandingPage/About/About";
 import faqImg from "../../../src/assets/images/faqs.jpeg";
 import FaqList from "../../components/LandingPage/Faq/FaqList";

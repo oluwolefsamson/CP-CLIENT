@@ -1,6 +1,6 @@
-"use client";
 
-import React from "react";
+
+
 import { useTranslation } from "react-i18next";
 import hero1 from "../../../assets/images/HeroImg/hero1.jpg";
 import hero2 from "../../../assets/images/HeroImg/hero2.jpg";
@@ -10,7 +10,7 @@ import hero5 from "../../../assets/images/HeroImg/hero5.jpg";
 
 import { AvatarCirclesDemo } from "../Avatar/Avatar";
 import { Link } from "react-router-dom";
-import { LineShadowText } from "../../LandingPage/magicui/line-shadow-text";
+
 
 const Hero = () => {
   const { t } = useTranslation();

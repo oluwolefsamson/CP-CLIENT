@@ -8,6 +8,7 @@ import {
   InputOTPSlot,
   InputOTPSeparator,
 } from "../../ui/input-otp";
+import { useAuth } from "@/services/hooks/authentication/useAuthContext"; // Adjust the path as needed
 
 const OnboardingSlider = ({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -15,6 +16,18 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
   const [resetPasswordEmail, setResetPasswordEmail] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  
+  // Use the auth hook
+  const {
+    login,
+    register,
+    isLoggingIn,
+    isRegistering,
+    loginError,
+    registerError,
+    isAuthenticated,
+    user
+  } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -53,6 +66,14 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
     navigate("/dashboard");
   };
 
+  // Handle successful authentication
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, user, navigate]);
+
+  // Reset form when modal closes
   useEffect(() => {
     if (!isOpen) {
       setCurrentStep(0);
@@ -66,6 +87,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
         newPassword: "",
         confirmPassword: "",
       });
+      setErrorMessage("");
     }
   }, [isOpen]);
 
@@ -81,7 +103,67 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
 
   const handleStepNavigation = (step) => {
     setCurrentStep(step);
+    setErrorMessage(""); // Clear error when navigating steps
   };
+
+  // Handle login
+  const handleLogin = async () => {
+    try {
+      setErrorMessage("");
+      const credentials = {
+        email: formData.email,
+        password: formData.password
+      };
+      
+      await login(credentials);
+      // The useEffect above will handle navigation when isAuthenticated becomes true
+    } catch (error) {
+      console.error("Login error:", error);
+      setErrorMessage(
+        loginError?.message || 
+        "Invalid email or password. Please try again."
+      );
+      handleStepNavigation(7);
+    }
+  };
+
+  // Handle register
+  const handleRegister = async () => {
+    try {
+      setErrorMessage("");
+      const userData = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
+      };
+      
+      await register(userData);
+      // After successful registration, go to verification step
+      handleStepNavigation(2);
+    } catch (error) {
+      console.error("Registration error:", error);
+      setErrorMessage(
+        registerError?.message || 
+        "Registration failed. Please try again."
+      );
+      handleStepNavigation(7);
+    }
+  };
+
+  // Handle password reset request
+  const handleResetPassword = async () => {
+    try {
+      setErrorMessage("");
+      // Add your password reset API call here
+      // await resetPassword({ email: formData.resetEmail });
+      handleStepNavigation(4);
+    } catch (error) {
+      console.error("Password reset error:", error);
+      setErrorMessage("Failed to send reset code. Please try again.");
+      handleStepNavigation(7);
+    }
+  };
+
   const [passwordVisibility, setPasswordVisibility] = useState({
     login: false,
     signup: false,
@@ -124,6 +206,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
                 placeholder="Enter your email"
                 className="w-full py-5 px-3 lg:py-3 text-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none"
                 onChange={handleInputChange}
+                value={formData.email}
               />
               <div className="relative">
                 <input
@@ -132,6 +215,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
                   placeholder="Enter your password"
                   className="w-full py-5 px-3 lg:py-3 text-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none pr-12"
                   onChange={handleInputChange}
+                  value={formData.password}
                 />
                 <button
                   type="button"
@@ -147,10 +231,11 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
               </div>
 
               <button
-                onClick={() => handleStepNavigation(2)}
-                className="w-full flex items-center justify-center h-[50px] mt-2 bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium"
+                onClick={handleLogin}
+                disabled={isLoggingIn}
+                className="w-full flex items-center justify-center h-[50px] mt-2 bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Continue
+                {isLoggingIn ? "Signing in..." : "Continue"}
               </button>
             </div>
 
@@ -200,6 +285,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
                 placeholder="Full name"
                 className="w-full py-5 px-3 lg:py-3 text-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none"
                 onChange={handleInputChange}
+                value={formData.name}
               />
               <input
                 type="email"
@@ -207,6 +293,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
                 placeholder="Email address"
                 className="w-full py-5 px-3 lg:py-3 text-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none"
                 onChange={handleInputChange}
+                value={formData.email}
               />
               <div className="relative ">
                 <input
@@ -215,6 +302,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
                   placeholder="Create password"
                   className="w-full py-5 px-3 lg:py-3 text-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none pr-12"
                   onChange={handleInputChange}
+                  value={formData.password}
                 />
                 <button
                   type="button"
@@ -230,10 +318,11 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
               </div>
 
               <button
-                onClick={() => handleStepNavigation(2)}
-                className="w-full flex items-center justify-center h-[50px] mt-2 bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium"
+                onClick={handleRegister}
+                disabled={isRegistering}
+                className="w-full flex items-center justify-center h-[50px] mt-2 bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Create Account
+                {isRegistering ? "Creating Account..." : "Create Account"}
               </button>
             </div>
 
@@ -249,136 +338,12 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
           </div>
         );
 
-        return (
-          <div className="w-full max-w-md space-y-6">
-            <div className="text-center space-y-2">
-              <p className="text-sm text-gray-600">
-                We sent a code to{" "}
-                {formData.email || "oluwolefsamson44@gmail.com"}
-              </p>
-            </div>
-
-            <div className="flex justify-center">
-              <InputOTP
-                maxLength={6}
-                value={formData.otp.join("")}
-                onChange={(value) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    otp: value.split(""),
-                  }))
-                }
-                containerClassName="justify-center"
-              >
-                <InputOTPGroup className="gap-3">
-                  {formData.otp.map((_, index) => (
-                    <InputOTPSlot
-                      key={index}
-                      index={index}
-                      className="w-14 h-14 text-xl border border-gray-300 rounded-3xl [--ring:rgb(59,130,246)]"
-                    />
-                  ))}
-                </InputOTPGroup>
-              </InputOTP>
-            </div>
-
-            <button
-              onClick={handleVerify}
-              className="w-full flex items-center justify-center h-[70px] bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium"
-            >
-              Verify
-            </button>
-
-            <p className="text-center text-sm text-gray-600">
-              Didn't receive code?{" "}
-              <button className="text-blue-600 font-medium hover:underline">
-                Resend
-              </button>
-            </p>
-          </div>
-        );
-
-        return (
-          <div className="w-full max-w-md space-y-6">
-            <div className="text-center space-y-2">
-              <p className="text-sm text-gray-600">
-                We sent a code to{" "}
-                {formData.email || "oluwolefsamson44@gmail.com"}
-              </p>
-            </div>
-
-            <div className="flex justify-center">
-              <InputOTP
-                maxLength={6}
-                value={formData.otp.join("")}
-                onChange={(value) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    otp: value.split(""),
-                  }))
-                }
-              >
-                {/* Group 1 - First two digits */}
-                <InputOTPGroup>
-                  <InputOTPSlot
-                    index={0}
-                    className="w-14 h-14 text-xl border border-gray-300 rounded-3xl [--ring:rgb(59,130,246)]"
-                  />
-                  <InputOTPSlot
-                    index={1}
-                    className="w-14 h-14 text-xl border border-gray-300 rounded-3xl [--ring:rgb(59,130,246)]"
-                  />
-                  <InputOTPSlot
-                    index={2}
-                    className="w-14 h-14 text-xl border border-gray-300 rounded-3xl [--ring:rgb(59,130,246)]"
-                  />
-                </InputOTPGroup>
-
-                <InputOTPSeparator className="mx-2 text-2xl">
-                  -
-                </InputOTPSeparator>
-
-                <InputOTPGroup className="gap-3">
-                  <InputOTPSlot
-                    index={4}
-                    className="w-14 h-14 text-xl border border-gray-300 rounded-3xl [--ring:rgb(59,130,246)]"
-                  />
-                  <InputOTPSlot
-                    index={5}
-                    className="w-14 h-14 text-xl border border-gray-300 rounded-3xl [--ring:rgb(59,130,246)]"
-                  />
-                  <InputOTPSlot
-                    index={6}
-                    className="w-14 h-14 text-xl border border-gray-300 rounded-3xl [--ring:rgb(59,130,246)]"
-                  />
-                </InputOTPGroup>
-              </InputOTP>
-            </div>
-
-            {/* Keep the rest of your verify button and resend code */}
-            <button
-              onClick={handleVerify}
-              className="w-full flex items-center justify-center h-[70px] bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium"
-            >
-              Verify
-            </button>
-
-            <p className="text-center text-sm text-gray-600">
-              Didn't receive code?{" "}
-              <button className="text-blue-600 font-medium hover:underline">
-                Resend
-              </button>
-            </p>
-          </div>
-        );
-
       case 2:
         return (
           <div className="w-full max-w-md space-y-6 px-4">
             <div className="text-center space-y-2">
               <p className="text-sm text-gray-600">
-                We sent a code to{" "}
-                {formData.email || "oluwolefsamson44@gmail.com"}
+                We sent a code to {formData.email}
               </p>
             </div>
 
@@ -448,10 +413,11 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
                 placeholder="Enter your email"
                 className="w-full py-5 px-3 lg:py-3 text-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none"
                 onChange={handleInputChange}
+                value={formData.resetEmail}
               />
 
               <button
-                onClick={() => handleStepNavigation(4)}
+                onClick={handleResetPassword}
                 className="w-full flex items-center justify-center h-[50px] mt-2 bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium"
               >
                 Send Reset Code
@@ -487,7 +453,15 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
                   }))
                 }
               >
-                {/* OTP input slots */}
+                <InputOTPGroup className="flex gap-1">
+                  {[0, 1, 2, 3, 4, 5].map((i) => (
+                    <InputOTPSlot
+                      key={i}
+                      index={i}
+                      className="w-10 h-10 sm:w-12 sm:h-12 border border-gray-300 rounded-lg text-lg text-center"
+                    />
+                  ))}
+                </InputOTPGroup>
               </InputOTP>
             </div>
 
@@ -520,6 +494,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
                   placeholder="New Password"
                   className="w-full py-5 px-3 lg:py-3 text-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none pr-12"
                   onChange={handleInputChange}
+                  value={formData.newPassword}
                 />
                 <button
                   type="button"
@@ -543,6 +518,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
                   placeholder="Confirm Password"
                   className="w-full py-5 px-3 lg:py-3 text-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none pr-12"
                   onChange={handleInputChange}
+                  value={formData.confirmPassword}
                 />
                 <button
                   type="button"
@@ -587,10 +563,6 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
             </div>
 
             <button
-              // onClick={() => {
-              //   setCurrentStep(0);
-              //   onClose();
-              // }}
               onClick={() => handleStepNavigation(0)}
               className="w-full flex items-center justify-center h-[50px] mt-2 bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium"
             >
