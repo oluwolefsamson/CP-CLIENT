@@ -83,7 +83,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
     }
   }, [isAuthenticated, user, navigate, onClose]);
 
-  // Handle successful login data
+
   useEffect(() => {
     if (loginData && loginData.token) {
       console.log("Login successful with token:", loginData.token);
@@ -97,7 +97,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
     }
   }, [loginData, navigate, onClose]);
 
-  // Handle successful OTP verification - UPDATED TO MATCH ACTUAL API RESPONSE
+  
   useEffect(() => {
     if (verifyOtpData) {
       console.log("OTP verification response:", verifyOtpData);
