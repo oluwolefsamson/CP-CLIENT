@@ -32,7 +32,6 @@ export const useRegister = () => {
   };
 };
 
-// Current user hook (if you have the endpoint)
 export const useCurrentUser = () => {
   return useQuery({
     queryKey: [AUTH_CURRENT_USER],
@@ -40,7 +39,6 @@ export const useCurrentUser = () => {
   });
 };
 
-// Logout hook (if you have the endpoint)
 export const useLogout = () => {
   const mutation = useMutation({
     mutationKey: [AUTH_LOGOUT],
