@@ -1,15 +1,13 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import Header from "../components/LandingPage/Header/Header";
-import Routers from "../routes/Routers";
 import Footer from "../components/LandingPage/Footer/Footer";
 
 const Layout = () => {
   const location = useLocation();
 
-  // Paths where Header and Footer should be hidden
+  // Hide header/footer on dashboard or admin pages
   const hiddenRoutes = ["/signup", "/admin", "/dashboard"];
-
   const shouldHideHeaderFooter = hiddenRoutes.some((path) =>
     location.pathname.startsWith(path)
   );
@@ -18,7 +16,7 @@ const Layout = () => {
     <>
       {!shouldHideHeaderFooter && <Header />}
       <main>
-        <Routers />
+        <Outlet /> {/* Nested routes render here */}
       </main>
       {!shouldHideHeaderFooter && <Footer />}
     </>

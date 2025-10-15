@@ -8,6 +8,11 @@ export const register = (userData) => {
   return post("/auth/register", userData);
 };
 
+export const verifyOtp = (data) => {
+  return post("/auth/verify-otp", data);
+};
+
+
 // Add logout if you have the endpoint
 export const logout = () => {
   return post("/auth/logout");

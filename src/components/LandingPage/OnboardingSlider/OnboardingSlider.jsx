@@ -2,13 +2,15 @@ import React, { useEffect, useState } from "react";
 import { BiX, BiShow, BiHide, BiChevronLeft } from "react-icons/bi";
 import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import Cookies from "js-cookie";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
   InputOTPSeparator,
 } from "../../ui/input-otp";
-import { useAuth } from "@/services/hooks/authentication/useAuthContext"; // Adjust the path as needed
+import { useAuth } from "@/services/hooks/authentication/useAuthContext";
 
 const OnboardingSlider = ({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -16,17 +18,23 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
   const [resetPasswordEmail, setResetPasswordEmail] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [countdown, setCountdown] = useState(0);
   
-  // Use the auth hook
+  // Use the auth hook with OTP functionality
   const {
     login,
     register,
+    verifyOtp,
     isLoggingIn,
     isRegistering,
+    isVerifyingOtp,
     loginError,
     registerError,
+    verifyOtpError,
     isAuthenticated,
-    user
+    user,
+    loginData,
+    verifyOtpData
   } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -62,16 +70,46 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
     7: "There was an issue processing your request",
   };
 
-  const handleVerify = () => {
-    navigate("/dashboard");
-  };
-
   // Handle successful authentication
   useEffect(() => {
-    if (isAuthenticated && user) {
-      navigate("/dashboard");
+    const token = Cookies.get("token");
+    if (token && (isAuthenticated || user)) {
+      console.log("Authentication successful, navigating to dashboard");
+      toast.success("Successfully authenticated!");
+      setTimeout(() => {
+        navigate("/dashboard");
+        onClose();
+      }, 1500);
     }
-  }, [isAuthenticated, user, navigate]);
+  }, [isAuthenticated, user, navigate, onClose]);
+
+  // Handle successful login data
+  useEffect(() => {
+    if (loginData && loginData.token) {
+      console.log("Login successful with token:", loginData.token);
+      Cookies.set("token", loginData.token);
+      toast.success("Login successful! Redirecting to dashboard...");
+      
+      setTimeout(() => {
+        navigate("/dashboard");
+        onClose();
+      }, 2000);
+    }
+  }, [loginData, navigate, onClose]);
+
+  // Handle successful OTP verification
+  useEffect(() => {
+    if (verifyOtpData && verifyOtpData.token) {
+      console.log("OTP verification successful with token:", verifyOtpData.token);
+      Cookies.set("token", verifyOtpData.token);
+      toast.success("Account verified! Redirecting to dashboard...");
+      
+      setTimeout(() => {
+        navigate("/dashboard");
+        onClose();
+      }, 2000);
+    }
+  }, [verifyOtpData, navigate, onClose]);
 
   // Reset form when modal closes
   useEffect(() => {
@@ -88,8 +126,17 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
         confirmPassword: "",
       });
       setErrorMessage("");
+      setCountdown(0);
     }
   }, [isOpen]);
+
+  // Countdown timer for resend OTP
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
 
   const handleInputChange = (e, index) => {
     if (currentStep === 2) {
@@ -103,26 +150,39 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
 
   const handleStepNavigation = (step) => {
     setCurrentStep(step);
-    setErrorMessage(""); // Clear error when navigating steps
+    setErrorMessage("");
   };
 
   // Handle login
   const handleLogin = async () => {
     try {
       setErrorMessage("");
+      
+      if (!formData.email || !formData.password) {
+        toast.error("Please fill in all fields");
+        return;
+      }
+
       const credentials = {
         email: formData.email,
         password: formData.password
       };
       
+      console.log("Attempting login with:", credentials);
+      
+      // Show loading toast
+      const loadingToast = toast.loading("Signing you in...");
+      
       await login(credentials);
-      // The useEffect above will handle navigation when isAuthenticated becomes true
+      
+      // Dismiss loading toast on success
+      toast.dismiss(loadingToast);
+      
     } catch (error) {
       console.error("Login error:", error);
-      setErrorMessage(
-        loginError?.message || 
-        "Invalid email or password. Please try again."
-      );
+      const errorMsg = loginError?.message || "Invalid email or password. Please try again.";
+      setErrorMessage(errorMsg);
+      toast.error(errorMsg);
       handleStepNavigation(7);
     }
   };
@@ -131,22 +191,98 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
   const handleRegister = async () => {
     try {
       setErrorMessage("");
+      
+      if (!formData.name || !formData.email || !formData.password) {
+        toast.error("Please fill in all fields");
+        return;
+      }
+
+      if (formData.password.length < 6) {
+        toast.error("Password must be at least 6 characters");
+        return;
+      }
+
       const userData = {
         name: formData.name,
         email: formData.email,
         password: formData.password
       };
       
+      // Show loading toast
+      const loadingToast = toast.loading("Creating your account...");
+      
       await register(userData);
-      // After successful registration, go to verification step
+      
+      // Dismiss loading and show success
+      toast.dismiss(loadingToast);
+      toast.success(`Account created! Verification code sent to ${formData.email}`);
+      
       handleStepNavigation(2);
+      setCountdown(60);
+      
     } catch (error) {
       console.error("Registration error:", error);
-      setErrorMessage(
-        registerError?.message || 
-        "Registration failed. Please try again."
-      );
+      const errorMsg = registerError?.message || "Registration failed. Please try again.";
+      setErrorMessage(errorMsg);
+      toast.error(errorMsg);
       handleStepNavigation(7);
+    }
+  };
+
+  // Handle OTP verification
+  const handleVerifyOtp = async () => {
+    try {
+      setErrorMessage("");
+      const otpCode = formData.otp.join('');
+      
+      if (otpCode.length !== 6) {
+        toast.error("Please enter the complete 6-digit OTP code");
+        return;
+      }
+
+      const verifyData = {
+        email: formData.email,
+        otp: otpCode
+      };
+
+      console.log("Attempting OTP verification with:", verifyData);
+      
+      // Show loading toast
+      const loadingToast = toast.loading("Verifying your code...");
+      
+      await verifyOtp(verifyData);
+      
+      // Dismiss loading toast on success
+      toast.dismiss(loadingToast);
+      
+    } catch (error) {
+      console.error("OTP verification error:", error);
+      const errorMsg = verifyOtpError?.message || "Invalid verification code. Please try again.";
+      setErrorMessage(errorMsg);
+      toast.error(errorMsg);
+    }
+  };
+
+  // Handle resend OTP
+  const handleResendOtp = async () => {
+    try {
+      setErrorMessage("");
+      
+      // Show loading toast
+      const loadingToast = toast.loading("Sending new code...");
+      
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+      // Dismiss loading and show success
+      toast.dismiss(loadingToast);
+      toast.success(`Verification code sent to ${formData.email}`);
+      
+      setCountdown(60);
+      
+    } catch (error) {
+      console.error("Resend OTP error:", error);
+      toast.error("Failed to resend OTP. Please try again.");
     }
   };
 
@@ -154,13 +290,93 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
   const handleResetPassword = async () => {
     try {
       setErrorMessage("");
-      // Add your password reset API call here
-      // await resetPassword({ email: formData.resetEmail });
+      
+      if (!formData.resetEmail) {
+        toast.error("Please enter your email address");
+        return;
+      }
+
+      // Show loading toast
+      const loadingToast = toast.loading("Sending reset code...");
+      
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      
+      // Dismiss loading and show success
+      toast.dismiss(loadingToast);
+      toast.success(`Reset code sent to ${formData.resetEmail}`);
+      
       handleStepNavigation(4);
+      setCountdown(60);
+      
     } catch (error) {
       console.error("Password reset error:", error);
-      setErrorMessage("Failed to send reset code. Please try again.");
+      toast.error("Failed to send reset code. Please try again.");
       handleStepNavigation(7);
+    }
+  };
+
+  // Handle reset password verification
+  const handleResetPasswordVerify = async () => {
+    try {
+      const otpCode = formData.resetOtp.join('');
+      
+      if (otpCode.length !== 6) {
+        toast.error("Please enter the complete 6-digit verification code");
+        return;
+      }
+
+      // Show loading toast
+      const loadingToast = toast.loading("Verifying reset code...");
+      
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+      // Dismiss loading and show success
+      toast.dismiss(loadingToast);
+      toast.success("Code verified! Please set your new password");
+      
+      handleStepNavigation(5);
+      
+    } catch (error) {
+      console.error("Reset OTP verification error:", error);
+      toast.error("Invalid verification code. Please try again.");
+    }
+  };
+
+  // Handle new password setup
+  const handleNewPassword = async () => {
+    try {
+      if (!formData.newPassword || !formData.confirmPassword) {
+        toast.error("Please fill in both password fields");
+        return;
+      }
+
+      if (formData.newPassword.length < 6) {
+        toast.error("Password must be at least 6 characters");
+        return;
+      }
+
+      if (formData.newPassword !== formData.confirmPassword) {
+        toast.error("Passwords do not match");
+        return;
+      }
+
+      // Show loading toast
+      const loadingToast = toast.loading("Updating your password...");
+      
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      
+      // Dismiss loading and show success
+      toast.dismiss(loadingToast);
+      toast.success("Password updated successfully!");
+      
+      handleStepNavigation(6);
+      
+    } catch (error) {
+      console.error("Password update error:", error);
+      toast.error("Failed to update password. Please try again.");
     }
   };
 
@@ -345,6 +561,9 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
               <p className="text-sm text-gray-600">
                 We sent a code to {formData.email}
               </p>
+              {errorMessage && (
+                <p className="text-sm text-red-600">{errorMessage}</p>
+              )}
             </div>
 
             <div className="flex justify-center items-center gap-3">
@@ -388,16 +607,21 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
             </div>
 
             <button
-              onClick={handleVerify}
-              className="w-full flex items-center justify-center h-[50px] bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium"
+              onClick={handleVerifyOtp}
+              disabled={isVerifyingOtp || formData.otp.join("").length !== 6}
+              className="w-full flex items-center justify-center h-[50px] bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Verify
+              {isVerifyingOtp ? "Verifying..." : "Verify"}
             </button>
 
             <p className="text-center text-sm text-gray-600">
               Didn't receive code?{" "}
-              <button className="text-blue-600 font-medium hover:underline">
-                Resend
+              <button
+                onClick={handleResendOtp}
+                disabled={countdown > 0}
+                className="text-blue-600 font-medium hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {countdown > 0 ? `Resend in ${countdown}s` : "Resend"}
               </button>
             </p>
           </div>
@@ -466,7 +690,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
             </div>
 
             <button
-              onClick={() => handleStepNavigation(5)}
+              onClick={handleResetPasswordVerify}
               className="w-full flex items-center justify-center h-[50px] bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium"
             >
               Verify Code
@@ -474,8 +698,12 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
 
             <p className="text-center text-sm text-gray-600">
               Didn't receive code?{" "}
-              <button className="text-blue-600 font-medium hover:underline">
-                Resend
+              <button 
+                onClick={handleResendOtp}
+                className="text-blue-600 font-medium hover:underline"
+                disabled={countdown > 0}
+              >
+                {countdown > 0 ? `Resend in ${countdown}s` : "Resend"}
               </button>
             </p>
           </div>
@@ -534,7 +762,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
               </div>
 
               <button
-                onClick={() => handleStepNavigation(6)}
+                onClick={handleNewPassword}
                 className="w-full flex items-center justify-center h-[50px] mt-2 bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium"
               >
                 Reset Password
@@ -563,7 +791,10 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
             </div>
 
             <button
-              onClick={() => handleStepNavigation(0)}
+              onClick={() => {
+                handleStepNavigation(0);
+                toast.success("Password reset successful! Please login with your new password.");
+              }}
               className="w-full flex items-center justify-center h-[50px] mt-2 bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium"
             >
               Continue to Login
