@@ -70,7 +70,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
     7: "There was an issue processing your request",
   };
 
-  // Handle successful authentication
+  // Handle successful authentication - for login only
   useEffect(() => {
     const token = Cookies.get("token");
     if (token && (isAuthenticated || user)) {
@@ -97,19 +97,33 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
     }
   }, [loginData, navigate, onClose]);
 
-  // Handle successful OTP verification
+  // Handle successful OTP verification - UPDATED TO MATCH ACTUAL API RESPONSE
   useEffect(() => {
-    if (verifyOtpData && verifyOtpData.token) {
-      console.log("OTP verification successful with token:", verifyOtpData.token);
-      Cookies.set("token", verifyOtpData.token);
-      toast.success("Account verified! Redirecting to dashboard...");
+    if (verifyOtpData) {
+      console.log("OTP verification response:", verifyOtpData);
       
-      setTimeout(() => {
-        navigate("/dashboard");
-        onClose();
-      }, 2000);
+      // Check for successful OTP verification based on the actual API response
+      if (verifyOtpData.message === "OTP verified successfully" || 
+          verifyOtpData.message === "Account created successfully" ||
+          verifyOtpData.user) {
+        
+        console.log("OTP verification successful:", verifyOtpData);
+        toast.success("Account verified successfully! Please login with your credentials.");
+        
+        // Clear the form data for fresh login
+        setFormData(prev => ({
+          ...prev,
+          password: "", // Clear password for security
+          otp: Array(6).fill(""), // Clear OTP
+        }));
+        
+        // Navigate to login step after a short delay
+        setTimeout(() => {
+          handleStepNavigation(0);
+        }, 1500);
+      }
     }
-  }, [verifyOtpData, navigate, onClose]);
+  }, [verifyOtpData]);
 
   // Reset form when modal closes
   useEffect(() => {
@@ -229,7 +243,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
     }
   };
 
-  // Handle OTP verification
+  // Handle OTP verification - UPDATED TO HANDLE NAVIGATION BETTER
   const handleVerifyOtp = async () => {
     try {
       setErrorMessage("");
@@ -255,6 +269,8 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
       // Dismiss loading toast on success
       toast.dismiss(loadingToast);
       
+      // Don't navigate here - let the useEffect handle it based on the response
+      
     } catch (error) {
       console.error("OTP verification error:", error);
       const errorMsg = verifyOtpError?.message || "Invalid verification code. Please try again.";
@@ -271,7 +287,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
       // Show loading toast
       const loadingToast = toast.loading("Sending new code...");
       
-      // Simulate API call
+      // Simulate API call - in a real app, you would call your resend OTP API
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
       // Dismiss loading and show success
