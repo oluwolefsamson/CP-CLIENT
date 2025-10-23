@@ -74,7 +74,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
     3: "Enter your email to reset password",
     4: "Check your email for verification code",
     5: "Create a strong new password",
-    6: "Password updated successfully",
+    6: "Account created successfully",
     7: "There was an issue processing your request",
   };
 
@@ -136,25 +136,48 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
       // Check for successful OTP verification based on the actual API response
       if (verifyOtpData.message === "OTP verified successfully" || 
           verifyOtpData.message === "Account created successfully" ||
-          verifyOtpData.user) {
+          verifyOtpData.user ||
+          verifyOtpData.token) {
         
         console.log("OTP verification successful:", verifyOtpData);
-        toast.success("Account verified successfully! Please login with your credentials.");
         
-        // Clear the form data for fresh login
-        setFormData(prev => ({
-          ...prev,
-          password: "", // Clear password for security
-          otp: Array(6).fill(""), // Clear OTP
-        }));
-        
-        // Navigate to login step after a short delay
-        setTimeout(() => {
-          handleStepNavigation(0);
-        }, 1500);
+        // If token is provided in OTP verification response, set it and redirect to dashboard
+        if (verifyOtpData.token) {
+          Cookies.set("token", verifyOtpData.token);
+          toast.success("Account verified successfully! Redirecting to dashboard...");
+          
+          // Clear the form data for security
+          setFormData(prev => ({
+            ...prev,
+            password: "", // Clear password for security
+            otp: Array(6).fill(""), // Clear OTP
+          }));
+          
+          // Navigate to dashboard after a short delay
+          setTimeout(() => {
+            navigate("/dashboard");
+            onClose();
+          }, 1500);
+        } else {
+          // If no token is provided, show success message but stay on OTP step
+          // This handles cases where backend doesn't auto-login after verification
+          toast.success("Account verified successfully! Please login with your credentials.");
+          
+          // Clear the form data for fresh login
+          setFormData(prev => ({
+            ...prev,
+            password: "", // Clear password for security
+            otp: Array(6).fill(""), // Clear OTP
+          }));
+          
+          // Navigate to login step after a short delay
+          setTimeout(() => {
+            handleStepNavigation(0);
+          }, 1500);
+        }
       }
     }
-  }, [verifyOtpData]);
+  }, [verifyOtpData, navigate, onClose]);
 
   // Reset form when modal closes
   useEffect(() => {
@@ -416,13 +439,10 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
         return;
       }
 
-      // Show loading toast
       const loadingToast = toast.loading("Verifying reset code...");
       
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
-      // Dismiss loading and show success
       toast.dismiss(loadingToast);
       toast.success("Code verified! Please set your new password");
       
@@ -434,7 +454,6 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
     }
   };
 
-  // Handle new password setup
   const handleNewPassword = async () => {
     try {
       if (!formData.newPassword || !formData.confirmPassword) {
@@ -452,13 +471,10 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
         return;
       }
 
-      // Show loading toast
       const loadingToast = toast.loading("Updating your password...");
-      
-      // Simulate API call
+
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      
-      // Dismiss loading and show success
+
       toast.dismiss(loadingToast);
       toast.success("Password updated successfully!");
       
@@ -583,7 +599,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
       case 1:
         return (
           <div className="w-full max-w-md space-y-6">
-            <div className="space-y-3">
+            <div className="space-y-3 flex items-center justify-center">
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
                 onError={handleGoogleError}
@@ -731,7 +747,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
               disabled={isVerifyingOtp || formData.otp.join("").length !== 6}
               className="w-full flex items-center justify-center h-[50px] bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isVerifyingOtp ? "Verifying..." : "Verify"}
+              {isVerifyingOtp ? "Verifying..." : "Verify & Continue"}
             </button>
 
             <p className="text-center text-sm text-gray-600">
