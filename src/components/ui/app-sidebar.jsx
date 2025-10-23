@@ -91,11 +91,6 @@ const data = {
       icon: UserIcon,
     },
 
-    {
-      title: "Logout",
-      url: "/logout",
-      icon: LogOutIcon,
-    },
   ],
 };
 

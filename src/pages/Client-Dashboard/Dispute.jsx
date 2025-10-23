@@ -216,7 +216,6 @@ export default function DisputePage() {
                   <Skeleton className="h-10 w-32 rounded" />
                 </div>
               </section>
-              {/* Reason & Market Context */}
               <div className="col-span-1 flex flex-col gap-6">
                 <section className="bg-yellow-50 border-l-4 border-yellow-400 rounded-2xl p-6 shadow-sm">
                   <Skeleton className="h-6 w-24 mb-2" />

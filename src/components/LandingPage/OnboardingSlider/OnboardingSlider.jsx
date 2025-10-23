@@ -11,6 +11,7 @@ import {
   InputOTPSeparator,
 } from "../../ui/input-otp";
 import { useAuth } from "@/services/hooks/authentication/useAuthContext";
+import { GoogleLogin } from "@react-oauth/google";
 
 const OnboardingSlider = ({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -25,16 +26,23 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
     login,
     register,
     verifyOtp,
+    googleAuth,
+    resendOtp,
     isLoggingIn,
     isRegistering,
     isVerifyingOtp,
+    isGoogleAuthLoading,
+    isResendingOtp,
     loginError,
     registerError,
     verifyOtpError,
+    googleAuthError,
+    resendOtpError,
     isAuthenticated,
     user,
     loginData,
-    verifyOtpData
+    verifyOtpData,
+    googleAuthData
   } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -70,7 +78,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
     7: "There was an issue processing your request",
   };
 
-  // Handle successful authentication - for login only
+  // Handle successful authentication for BOTH regular login AND Google login
   useEffect(() => {
     const token = Cookies.get("token");
     if (token && (isAuthenticated || user)) {
@@ -83,7 +91,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
     }
   }, [isAuthenticated, user, navigate, onClose]);
 
-
+  // Handle successful regular login
   useEffect(() => {
     if (loginData && loginData.token) {
       console.log("Login successful with token:", loginData.token);
@@ -96,6 +104,29 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
       }, 2000);
     }
   }, [loginData, navigate, onClose]);
+
+  // Handle successful Google authentication
+  useEffect(() => {
+    if (googleAuthData && googleAuthData.token) {
+      console.log("Google login successful with token:", googleAuthData.token);
+      Cookies.set("token", googleAuthData.token);
+      toast.success("Google login successful! Redirecting to dashboard...");
+      
+      setTimeout(() => {
+        navigate("/dashboard");
+        onClose();
+      }, 2000);
+    }
+  }, [googleAuthData, navigate, onClose]);
+
+  // Handle successful Google authentication via isAuthenticated
+  useEffect(() => {
+    const token = Cookies.get("token");
+    if (token && isAuthenticated) {
+      console.log("Google authentication successful via isAuthenticated");
+      // Navigation is handled by the main authentication effect
+    }
+  }, [isAuthenticated]);
 
   
   useEffect(() => {
@@ -167,6 +198,46 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
     setErrorMessage("");
   };
 
+  // Handle Google OAuth success
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setErrorMessage("");
+      
+      if (!credentialResponse.credential) {
+        toast.error("Google authentication failed. Please try again.");
+        return;
+      }
+
+      console.log("Google auth successful, sending token to backend...");
+      
+      // Show loading toast
+      const loadingToast = toast.loading("Signing you in with Google...");
+      
+      await googleAuth(credentialResponse.credential);
+      
+      // Dismiss loading toast on success
+      toast.dismiss(loadingToast);
+      
+      console.log("Google auth completed, waiting for redirection...");
+      
+      // The redirection will be handled by the useEffect above
+      // that watches googleAuthData and isAuthenticated
+      
+    } catch (error) {
+      console.error("Google auth error:", error);
+      const errorMsg = googleAuthError?.message || "Google authentication failed. Please try again.";
+      setErrorMessage(errorMsg);
+      toast.error(errorMsg);
+      handleStepNavigation(7);
+    }
+  };
+
+  // Handle Google OAuth error
+  const handleGoogleError = () => {
+    console.error("Google OAuth failed");
+    toast.error("Google authentication failed. Please try again.");
+  };
+
   // Handle login
   const handleLogin = async () => {
     try {
@@ -227,7 +298,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
       
       await register(userData);
       
-      // Dismiss loading and show success
+      // Dismiss and show success
       toast.dismiss(loadingToast);
       toast.success(`Account created! Verification code sent to ${formData.email}`);
       
@@ -243,7 +314,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
     }
   };
 
-  // Handle OTP verification - UPDATED TO HANDLE NAVIGATION BETTER
+  // Handle OTP verification
   const handleVerifyOtp = async () => {
     try {
       setErrorMessage("");
@@ -269,8 +340,6 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
       // Dismiss loading toast on success
       toast.dismiss(loadingToast);
       
-      // Don't navigate here - let the useEffect handle it based on the response
-      
     } catch (error) {
       console.error("OTP verification error:", error);
       const errorMsg = verifyOtpError?.message || "Invalid verification code. Please try again.";
@@ -279,16 +348,20 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
     }
   };
 
-  // Handle resend OTP
+  // Handle resend OTP - UPDATED TO USE REAL API
   const handleResendOtp = async () => {
     try {
       setErrorMessage("");
       
+      if (!formData.email) {
+        toast.error("Email is required to resend OTP");
+        return;
+      }
+
       // Show loading toast
       const loadingToast = toast.loading("Sending new code...");
       
-      // Simulate API call - in a real app, you would call your resend OTP API
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await resendOtp(formData.email);
       
       // Dismiss loading and show success
       toast.dismiss(loadingToast);
@@ -298,7 +371,8 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
       
     } catch (error) {
       console.error("Resend OTP error:", error);
-      toast.error("Failed to resend OTP. Please try again.");
+      const errorMsg = resendOtpError?.message || "Failed to resend OTP. Please try again.";
+      toast.error(errorMsg);
     }
   };
 
@@ -416,10 +490,20 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
         return (
           <div className="w-full max-w-md space-y-6">
             <div className="space-y-3">
-              <button className="w-full p-3 rounded-full border border-gray-300 flex gap-3 items-center justify-center text-base hover:bg-gray-50">
-                <FcGoogle className="w-5 h-5" />
-                Continue with Google
-              </button>
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                theme="filled_blue"
+                size="large"
+                text="continue_with"
+                shape="rectangular"
+                width="100%"
+                disabled={isGoogleAuthLoading || isLoggingIn}
+                useOneTap={false}
+              />
+              {isGoogleAuthLoading && (
+                <p className="text-center text-sm text-gray-600">Connecting with Google...</p>
+              )}
             </div>
 
             <div className="relative">
@@ -439,6 +523,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
                 className="w-full py-5 px-3 lg:py-3 text-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none"
                 onChange={handleInputChange}
                 value={formData.email}
+                disabled={isGoogleAuthLoading}
               />
               <div className="relative">
                 <input
@@ -448,11 +533,13 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
                   className="w-full py-5 px-3 lg:py-3 text-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none pr-12"
                   onChange={handleInputChange}
                   value={formData.password}
+                  disabled={isGoogleAuthLoading}
                 />
                 <button
                   type="button"
                   onClick={() => togglePasswordVisibility("login")}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  disabled={isGoogleAuthLoading}
                 >
                   {passwordVisibility.login ? (
                     <BiHide size={20} />
@@ -464,8 +551,8 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
 
               <button
                 onClick={handleLogin}
-                disabled={isLoggingIn}
-                className="w-full flex items-center justify-center h-[50px] mt-2 bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isLoggingIn || isGoogleAuthLoading}
+                className="w-full flex items-center justify-center h-[50px] mt-2 bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isLoggingIn ? "Signing in..." : "Continue"}
               </button>
@@ -476,6 +563,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
               <button
                 onClick={() => handleStepNavigation(1)}
                 className="text-blue-600 font-medium hover:underline"
+                disabled={isGoogleAuthLoading}
               >
                 Sign up
               </button>
@@ -484,6 +572,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
               <button
                 onClick={() => handleStepNavigation(3)}
                 className="text-blue-600 font-medium hover:underline"
+                disabled={isGoogleAuthLoading}
               >
                 Forgot Password?
               </button>
@@ -495,10 +584,20 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
         return (
           <div className="w-full max-w-md space-y-6">
             <div className="space-y-3">
-              <button className="w-full p-3 rounded-full border border-gray-300 flex gap-3 items-center justify-center text-base hover:bg-gray-50">
-                <FcGoogle className="w-5 h-5" />
-                Continue with Google
-              </button>
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                theme="filled_blue"
+                size="large"
+                text="signup_with"
+                shape="rectangular"
+                width="100%"
+                disabled={isGoogleAuthLoading || isRegistering}
+                useOneTap={false}
+              />
+              {isGoogleAuthLoading && (
+                <p className="text-center text-sm text-gray-600">Signing up with Google...</p>
+              )}
             </div>
 
             <div className="relative">
@@ -518,6 +617,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
                 className="w-full py-5 px-3 lg:py-3 text-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none"
                 onChange={handleInputChange}
                 value={formData.name}
+                disabled={isGoogleAuthLoading}
               />
               <input
                 type="email"
@@ -526,6 +626,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
                 className="w-full py-5 px-3 lg:py-3 text-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none"
                 onChange={handleInputChange}
                 value={formData.email}
+                disabled={isGoogleAuthLoading}
               />
               <div className="relative ">
                 <input
@@ -535,11 +636,13 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
                   className="w-full py-5 px-3 lg:py-3 text-sm border border-gray-300 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none pr-12"
                   onChange={handleInputChange}
                   value={formData.password}
+                  disabled={isGoogleAuthLoading}
                 />
                 <button
                   type="button"
                   onClick={() => togglePasswordVisibility("signup")}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  disabled={isGoogleAuthLoading}
                 >
                   {passwordVisibility.signup ? (
                     <BiHide size={20} />
@@ -551,8 +654,8 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
 
               <button
                 onClick={handleRegister}
-                disabled={isRegistering}
-                className="w-full flex items-center justify-center h-[50px] mt-2 bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isRegistering || isGoogleAuthLoading}
+                className="w-full flex items-center justify-center h-[50px] mt-2 bg-green-600 hover:bg-green-700 text-white rounded-3xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isRegistering ? "Creating Account..." : "Create Account"}
               </button>
@@ -563,6 +666,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
               <button
                 onClick={() => handleStepNavigation(0)}
                 className="text-blue-600 font-medium hover:underline"
+                disabled={isGoogleAuthLoading}
               >
                 Login
               </button>
@@ -634,10 +738,10 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
               Didn't receive code?{" "}
               <button
                 onClick={handleResendOtp}
-                disabled={countdown > 0}
+                disabled={countdown > 0 || isResendingOtp}
                 className="text-blue-600 font-medium hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {countdown > 0 ? `Resend in ${countdown}s` : "Resend"}
+                {isResendingOtp ? "Sending..." : countdown > 0 ? `Resend in ${countdown}s` : "Resend"}
               </button>
             </p>
           </div>
@@ -717,9 +821,9 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
               <button 
                 onClick={handleResendOtp}
                 className="text-blue-600 font-medium hover:underline"
-                disabled={countdown > 0}
+                disabled={countdown > 0 || isResendingOtp}
               >
-                {countdown > 0 ? `Resend in ${countdown}s` : "Resend"}
+                {isResendingOtp ? "Sending..." : countdown > 0 ? `Resend in ${countdown}s` : "Resend"}
               </button>
             </p>
           </div>
@@ -863,6 +967,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
               <button
                 onClick={() => handleStepNavigation(currentStep - 1)}
                 className="hover:text-primaryColor"
+                disabled={isGoogleAuthLoading}
               >
                 <BiChevronLeft className="w-8 h-8" />
               </button>
@@ -870,6 +975,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
             <button
               onClick={onClose}
               className="self-end hover:text-primaryColor ml-auto"
+              disabled={isGoogleAuthLoading}
             >
               <BiX className="w-8 h-8" />
             </button>
