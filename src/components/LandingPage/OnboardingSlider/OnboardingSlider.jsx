@@ -489,7 +489,7 @@ const OnboardingSlider = ({ isOpen, onClose }) => {
       case 0:
         return (
           <div className="w-full max-w-md space-y-6">
-            <div className="space-y-3">
+            <div className="space-y-3 flex items-center justify-center">
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
                 onError={handleGoogleError}
